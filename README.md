@@ -56,8 +56,10 @@ Estate Craft is a comprehensive real estate management platform built using the 
 
 Install zip file or clone git project
 
-bash
-https://github.com/KoushikReddy9963/Realestatephase1.git
+
+```bash
+https://github.com/KoushikReddy9963/RealEstate-Phase-1-Group46.git
+```
 
     
 
