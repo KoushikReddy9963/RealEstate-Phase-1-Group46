@@ -61,41 +61,45 @@ https://github.com/KoushikReddy9963/Realestatephase1.git
 
     
 
+
 ## Run Locally
 
 Make two Window termianls for Running project
 
-#### Terminal-1
+Terminal-1
 
-bash
+```bash
   cd backend
-
+```
 
 Install dependencies
 
-bash
+```bash
   npm install
-
+```
 
 Start the server
 
-bash
+```bash
   npm run dev
+```
 
+Terminal-2
 
-#### Terminal-2
-
-bash
+```bash
   cd frontend
-
+```
 
 Install dependencies
 
-bash
+```bash
   npm install
-
+```
 
 Start the server
 
-bash
+```bash
   npm run start
+```
+
+
