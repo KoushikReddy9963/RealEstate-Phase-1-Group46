@@ -115,6 +115,40 @@ const Message = styled.div`
   color: #28a745;
 `;
 
+
+const PaymentButton = styled.button`
+  padding: 12px 24px;
+  margin-top: 20px;
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 300px;
+  align-self: center;
+
+  &:hover {
+    background: linear-gradient(90deg, #218838, #28a745);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 4px #28a745;
+  }
+`;
+
+
 const SellerPage = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -133,7 +167,47 @@ const SellerPage = () => {
     navigate('/');
   };
 
+  const makepayment = async () => {
+
+    const token = authService.getToken();
+    const data = {
+      amount: price * 100,
+      currency: 'usd',
+      product: title,
+    }
+
+
+    // console.log('data:', data);
+  
+    try {
+      const response = await axios.post('http://localhost:5000/api/seller/payment', data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const paymentUrl = response.data.paymentUrl;
+      let flag = response.data.flag;
+      //set flag in local storae
+      localStorage.setItem('flag', flag);
+      // window.alert(paymentUrl);
+      window.location.href = paymentUrl;
+
+
+    
+
+    } catch (error) {
+      console.error('Payment initiation failed:', error);
+      setMessage('Payment initiation failed.');
+    }
+  };
+  
+
+
+
+
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     const formData = new FormData();
     formData.append('title', title);
@@ -141,6 +215,9 @@ const SellerPage = () => {
     formData.append('price', price);
     formData.append('location', location);
     formData.append('image', image);
+
+
+    console.log('Form data:', formData);
 
     try {
       const token = authService.getToken();
@@ -223,6 +300,7 @@ const SellerPage = () => {
           />
           <SubmitButton type="submit">Add Property</SubmitButton>
         </PropertyForm>
+        <PaymentButton onClick={makepayment}>Make Payment</PaymentButton>
       </SellerContainer>
     </AppContainer>
   );
