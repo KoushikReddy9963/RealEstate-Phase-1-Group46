@@ -12,7 +12,6 @@ import feedbackRoutes from './routes/feedbackroutes.js';
 import Stripe from 'stripe';
 
 dotenv.config();
-const stripe = new Stripe('sk_test_51QFqmE04LmtyqkXBjqvuWUaFlhLtHefd6sH1bMlVnz3oz628S1DGj3qVB0Xl2p3PIsD4CrU34xpQ6svZkcDnlkgf00A98gKu96');
 const app = express();
 app.use(express.json());
 app.use(cors());
