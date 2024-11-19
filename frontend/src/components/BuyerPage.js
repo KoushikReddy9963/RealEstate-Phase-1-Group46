@@ -218,7 +218,7 @@ const BuyerPage = () => {
         : properties;
 
     return (
-      <div style={styles.gridContainer}>
+      <PropertyGrid>
         {propertiesToShow.map((property) => (
           <PropertyCard key={property._id}>
             <StatusBadge status={property.status || 'available'}>
@@ -268,7 +268,7 @@ const BuyerPage = () => {
             </div>
           </PropertyCard>
         ))}
-      </div>
+      </PropertyGrid>
     );
   };
 
@@ -288,6 +288,39 @@ const BuyerPage = () => {
   `;
 
   const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata'];
+
+  const PropertyCard = styled.div`
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+  `;
+
+  const StatusBadge = styled.span`
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: 600;
+    background-color: ${props => 
+      props.status === 'available' ? '#4CAF50' :
+      props.status === 'pending' ? '#FFC107' :
+      '#F44336'};
+    color: white;
+  `;
+
+  const PropertyGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  `;
 
   return (
     <div style={styles.page}>
@@ -454,23 +487,6 @@ const styles = {
   }
 };
 
-const PropertyCard = styled.div`
-  position: relative;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  background: white;
-  padding: 20px;
-  margin-bottom: 20px;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
-`;
-
 const FavoriteButton = styled.button`
   position: absolute;
   top: 10px;
@@ -499,19 +515,6 @@ const FavoriteButton = styled.button`
   &:active {
     transform: scale(0.95);
   }
-`;
-
-const StatusBadge = styled.span`
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 14px;
-  font-weight: 600;
-  background: ${props => props.status === 'available' ? '#4CAF50' : '#f44336'};
-  color: white;
-  z-index: 1;
 `;
 
 const LogoutButton = styled.button`
