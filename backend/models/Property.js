@@ -8,7 +8,17 @@ const propertySchema = new mongoose.Schema({
     description: { type: String, required: true },
     price: { type: Number, required: true },
     image: { type: String },
-    createdAt: { type: Date, default: Date.now }
+    propertyType: { type: String, enum: ['house', 'apartment', 'villa', 'land'], required: true },
+    bedrooms: { type: Number },
+    bathrooms: { type: Number },
+    area: { type: Number, required: true },
+    amenities: [{ type: String }],
+    createdAt: { type: Date, default: Date.now },
+    status: {
+        type: String,
+        enum: ['available', 'sold', 'pending'],
+        default: 'available'
+    }
 });
 
 export default mongoose.model('Property', propertySchema);

@@ -45,77 +45,89 @@ const EmployeePage = () => {
     };
 
     const styles = {
+        pageContainer: {
+            minHeight: '100vh',
+            background: 'linear-gradient(to right, #f8f9fa, #e9ecef)',
+            padding: '40px 20px',
+        },
         container: {
-            maxWidth: '600px',
+            maxWidth: '800px',
             margin: '0 auto',
-            marginTop: '-10px',
-            padding: '20px',
-            backgroundColor: '#f9f9f9',
-            borderRadius: '8px',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+            padding: '2rem',
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+        },
+        header: {
+            textAlign: 'center',
+            marginBottom: '30px',
         },
         title: {
-            marginBottom: '10px',
-            fontSize: '24px',
-            fontWeight: 'bold',
+            fontSize: '28px',
+            fontWeight: '600',
+            color: '#1a1a1a',
+            marginBottom: '20px',
         },
-        inputt: {
-            height: '50px',
-            width: '100%',
-            padding: '10px',
-            marginBottom: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
+        form: {
+            display: 'grid',
+            gap: '20px',
         },
-        inp: {
+        input: {
+            padding: '12px',
+            border: '1.5px solid #999',
+            borderRadius: '8px',
+            fontSize: '16px',
+            transition: 'all 0.3s ease',
             width: '100%',
-            padding: '10px',
-            marginBottom: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
+            '&:focus': {
+                borderColor: '#007bff',
+                boxShadow: '0 0 0 2px rgba(0, 123, 255, 0.2)',
+                outline: 'none',
+            },
+        },
+        fileInput: {
+            padding: '12px',
+            border: '1.5px solid #999',
+            borderRadius: '8px',
+            backgroundColor: '#f8f9fa',
         },
         preview: {
             width: '100%',
             maxHeight: '300px',
-            marginBottom: '10px',
-            objectFit: 'cover',
-        },
-        head: {
-            fontSize: '30px',
-            marginTop: '20px',
-            color: 'black',
+            objectFit: 'contain',
+            borderRadius: '8px',
+            marginTop: '10px',
         },
         button: {
-            padding: '10px 15px',
-            backgroundColor: '#40434E',
+            padding: '14px',
+            backgroundColor: '#007bff',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginLeft: '40%',
-        },
-        error: {
-            color: 'red',
-            marginBottom: '10px',
-        },
-        maincontainer: {
-            height: '100vh',
-            width: '100vw',
-            background: 'linear-gradient(135deg, #71b7e6, #9b59b6)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-        },
-        footer: {
-            width: '100%',
-            textAlign: 'center',
-            padding: '10px',
-            backgroundColor: '#40434E',
-            color: 'white',
+            borderRadius: '8px',
             fontSize: '16px',
-            position: 'relative',
-            bottom: 0,
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            width: '100%',
+            '&:hover': {
+                backgroundColor: '#0056b3',
+                transform: 'translateY(-1px)',
+            },
+        },
+        logoutButton: {
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            padding: '10px 20px',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'background-color 0.3s',
+            '&:hover': {
+                backgroundColor: '#c82333',
+            },
         },
     };
     const handleLogout = () => {
@@ -124,59 +136,56 @@ const EmployeePage = () => {
     };
 
     return (
-        <div style={styles.container}>
+        <div style={styles.pageContainer}>
             <button
-                style={{
-                    padding: "10px 20px",
-                    backgroundColor: "#1e3a8a",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    transition: "background-color 0.3s",
-                    position: "absolute",
-                    top: "20px",
-                    right: "20px",
-                    fontWeight: "bold",
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#3b82f6"}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#2563eb"}
+                style={styles.logoutButton}
                 onClick={handleLogout}
             >
                 Logout
             </button>
 
-            <h1 style={styles.head}>Employee Page</h1>
             <div style={styles.container}>
-                <h1 style={styles.title}>Add Advertisement</h1>
-                {errorMessage && <div style={styles.error}>{errorMessage}</div>} {/* Display error message */}
-                <form onSubmit={handleSubmit}>
+                <div style={styles.header}>
+                    <h1 style={styles.title}>Advertisement Management</h1>
+                </div>
+                
+                {errorMessage && (
+                    <div style={{
+                        padding: '12px',
+                        backgroundColor: '#fee2e2',
+                        color: '#dc2626',
+                        borderRadius: '8px',
+                        marginBottom: '20px',
+                        textAlign: 'center'
+                    }}>
+                        {errorMessage}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} style={styles.form}>
                     <input
                         type="text"
-                        placeholder="Title"
+                        placeholder="Advertisement Title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        style={styles.inputt}
+                        style={styles.input}
                         required
                     />
+                    
                     <input
                         type="file"
                         accept="image/png, image/jpeg"
                         onChange={handleFileChange}
-                        style={styles.inp}
+                        style={styles.fileInput}
                         required
                     />
-
-                    {/* Preview the selected image */}
+                    
                     {preview && <img src={preview} alt="Preview" style={styles.preview} />}
-
-                    <button type="submit" style={styles.button}>Submit</button>
+                    
+                    <button type="submit" style={styles.button}>
+                        Submit Advertisement
+                    </button>
                 </form>
-            </div>
-
-            {/* Footer */}
-            <div style={styles.footer}>
-                For better Advertising Management..
             </div>
         </div>
     );

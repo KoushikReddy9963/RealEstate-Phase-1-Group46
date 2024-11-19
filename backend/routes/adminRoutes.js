@@ -1,12 +1,12 @@
 import express from 'express';
+import { getDashboardStats, deleteUser } from '../controllers/AdminController.js';
 import { verifyJWT, roleCheck } from '../middlewares/auth.js';
-import { getAdminDashboardData, deleteUser } from '../controllers/AdminController.js';
 import { deleteFeedback } from '../controllers/FeedbackController.js';
 
 const router = express.Router();
 
-router.get('/', verifyJWT, roleCheck(['admin']), getAdminDashboardData);
-router.post('/delete-feedback', verifyJWT, roleCheck(['admin']), deleteFeedback);
-router.delete('/delete-user/:id', verifyJWT, roleCheck(['admin']), deleteUser);
+router.get('/dashboard-stats', verifyJWT, roleCheck(['admin']), getDashboardStats);
+router.delete('/users/:id', verifyJWT, roleCheck(['admin']), deleteUser);
+router.delete('/feedback/:id', verifyJWT, roleCheck(['admin']), deleteFeedback);
 
 export default router;

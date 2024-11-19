@@ -28,6 +28,8 @@ app.use('/api/employee', employeeRoutes);
 app.use('/api/adv', AdvertisementRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
+const stripe = new Stripe(process.env.STRIPE_KEY);
+
 app.post('/api/seller/payment', async (req, res) => {
     try {
         const { amount, currency, product } = req.body;
