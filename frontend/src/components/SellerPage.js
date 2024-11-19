@@ -115,38 +115,6 @@ const Message = styled.div`
   color: #28a745;
 `;
 
-const PaymentButton = styled.button`
-  padding: 12px 24px;
-  margin-top: 20px;
-  background: linear-gradient(90deg, #28a745, #218838);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
-  width: 100%;
-  max-width: 300px;
-  align-self: center;
-
-  &:hover {
-    background: linear-gradient(90deg, #218838, #28a745);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 4px #28a745;
-  }
-`;
-
 const LogoutButton = styled.button`
   position: absolute;
   top: 20px;
@@ -235,6 +203,21 @@ const FormSection = styled.div`
   width: 100%;
 `;
 
+const AdvertiseButton = styled.button`
+  padding: 8px 16px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #218838;
+  }
+`;
+
 const SellerPage = () => {
   const [view, setView] = useState('add');
   const [myProperties, setMyProperties] = useState([]);
@@ -267,44 +250,30 @@ const SellerPage = () => {
     navigate('/');
   };
 
-  const makepayment = async () => {
-
+  const handleAdvertise = async (propertyId, price, title) => {
     const token = authService.getToken();
     const data = {
-      amount: formData.price * 100,
+      amount: 10000,
       currency: 'usd',
-      product: formData.title,
-    }
+      product: `Advertisement for: ${title}`,
+      propertyId: propertyId
+    };
 
-
-    // console.log('data:', data);
-  
     try {
-      const response = await axios.post('http://localhost:5000/api/seller/payment', data, {
+      const response = await axios.post('http://localhost:5000/api/seller/advertise', data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
       const paymentUrl = response.data.paymentUrl;
-      let flag = response.data.flag;
-      //set flag in local storae
-      localStorage.setItem('flag', flag);
-      // window.alert(paymentUrl);
+      localStorage.setItem('flag', response.data.flag);
       window.location.href = paymentUrl;
-
-
-    
-
     } catch (error) {
-      console.error('Payment initiation failed:', error);
-      setMessage('Payment initiation failed.');
+      console.error('Advertisement payment failed:', error);
+      alert('Failed to initiate advertisement payment. Please try again.');
     }
   };
-  
-
-
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -510,6 +479,11 @@ const SellerPage = () => {
                     <option value="pending">Pending</option>
                     <option value="sold">Sold</option>
                   </StatusSelect>
+                  <AdvertiseButton 
+                    onClick={() => handleAdvertise(property._id, property.price, property.title)}
+                  >
+                    Advertise Property
+                  </AdvertiseButton>
                 </PropertyCard>
               ))}
             </PropertiesGrid>
@@ -517,12 +491,6 @@ const SellerPage = () => {
         )}
       </SellerContainer>
       {message && <Message>{message}</Message>}
-
-      {formData.price && (
-        <PaymentButton onClick={makepayment}>
-          Proceed to Payment
-        </PaymentButton>
-      )}
     </AppContainer>
   );
 };

@@ -1,4 +1,61 @@
 import Property from '../models/Property.js';
+import Stripe from 'stripe';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+const stripe = new Stripe(process.env.STRIPE_KEY);
+
+// Add this after your existing exports
+export const purchaseProperty = async (req, res) => {
+    try {
+        const { amount, currency, product, propertyId } = req.body;
+        const userId = req.user.id;
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: currency,
+                    product_data: {
+                        name: product,
+                    },
+                    unit_amount: amount,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: 'http://localhost:3000/payment-success',
+            cancel_url: 'http://localhost:3000/payment-cancel',
+            metadata: {
+                propertyId: propertyId,
+                buyerId: userId
+            }
+        });
+
+        const purchase = new Purchase({
+            property: propertyId,
+            buyer: userId,
+            amount: amount / 100,
+            status: 'pending',
+            stripeSessionId: session.id
+        });
+        await purchase.save();
+
+        res.json({
+            paymentUrl: session.url,
+            flag: session.id
+        });
+    } catch (error) {
+        console.error('Purchase initiation failed:', error);
+        res.status(500).json({ message: 'Failed to initiate purchase' });
+    }
+};
+
 
 export const addProperty = async (req, res) => {
     const { 
@@ -109,5 +166,52 @@ export const updatePropertyStatus = async (req, res) => {
         res.status(200).json(property);
     } catch (error) {
         res.status(500).json({ message: 'Failed to update property status' });
+    }
+};
+
+export const advertiseProperty = async (req, res) => {
+    try {
+        const { amount, currency, product, propertyId } = req.body;
+        const userId = req.user.id;
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: currency || 'inr',
+                    product_data: {
+                        name: `Advertisement: ${product}`,
+                    },
+                    unit_amount: amount,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: 'http://localhost:3000/payment-success',
+            cancel_url: 'http://localhost:3000/payment-cancel',
+            metadata: {
+                propertyId: propertyId,
+                sellerId: userId,
+                type: 'advertisement'
+            }
+        });
+
+        // Update property advertisement status
+        await Property.findOneAndUpdate(
+            { _id: propertyId, seller: userId },
+            { 
+                isAdvertised: true,
+                advertisementDate: new Date(),
+                stripeSessionId: session.id
+            }
+        );
+
+        res.json({
+            paymentUrl: session.url,
+            flag: session.id
+        });
+    } catch (error) {
+        console.error('Advertisement payment failed:', error);
+        res.status(500).json({ message: 'Failed to initiate advertisement payment' });
     }
 };

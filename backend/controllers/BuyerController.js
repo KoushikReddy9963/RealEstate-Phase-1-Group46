@@ -3,6 +3,63 @@ import Purchase from '../models/Purchase.js';
 import User from '../models/User.js';
 import Favorite from '../models/Favorite.js';
 
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import Stripe from 'stripe';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+const stripe = new Stripe(process.env.STRIPE_KEY);
+
+// Add this after your existing exports
+export const purchaseProperty = async (req, res) => {
+    try {
+        const { amount, currency, product, propertyId } = req.body;
+        const userId = req.user.id;
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: currency,
+                    product_data: {
+                        name: product,
+                    },
+                    unit_amount: amount,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: 'http://localhost:3000/payment-success',
+            cancel_url: 'http://localhost:3000/payment-cancel',
+            metadata: {
+                propertyId: propertyId,
+                buyerId: userId
+            }
+        });
+
+        const purchase = new Purchase({
+            property: propertyId,
+            buyer: userId,
+            amount: amount / 100,
+            status: 'pending',
+            stripeSessionId: session.id
+        });
+        await purchase.save();
+
+        res.json({
+            paymentUrl: session.url,
+            flag: session.id
+        });
+    } catch (error) {
+        console.error('Purchase initiation failed:', error);
+        res.status(500).json({ message: 'Failed to initiate purchase' });
+    }
+};
+
 export const viewProperties = async (req, res) => {
     try {
         const {
@@ -71,7 +128,10 @@ export const viewProperties = async (req, res) => {
 export const getPurchasedProperties = async (req, res) => {
     try {
         const purchases = await Purchase.find({ buyer: req.user.id })
-            .populate('property')
+            .populate({
+                path: 'property',
+                select: 'title location price image description userEmail createdAt status'
+            })
             .sort({ purchaseDate: -1 });
 
         res.status(200).json(purchases);
@@ -141,7 +201,7 @@ export const removeFromFavorites = async (req, res) => {
         const userId = req.user.id;
 
         const result = await Favorite.findOneAndDelete({ userId, propertyId });
-        
+
         if (!result) {
             return res.status(404).json({ message: 'Favorite not found' });
         }

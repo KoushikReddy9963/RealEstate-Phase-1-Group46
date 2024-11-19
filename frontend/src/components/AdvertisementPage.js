@@ -159,7 +159,7 @@ const AdvertisementPage = () => {
             {/* Footer */}
             <footer style={styles.footer}>
                 <div style={styles.footerContent}>
-                    Created by Nourish Nest | Powered by Spoonacular API | All rights reserved!
+                    © 2024 Real Estate Portal | All rights reserved
                 </div>
             </footer>
         </div>

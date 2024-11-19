@@ -9,5 +9,6 @@ router.get('/purchased', verifyJWT, roleCheck(['buyer']), buyerController.getPur
 router.get('/favorites', verifyJWT, roleCheck(['buyer']), buyerController.getFavorites);
 router.post('/favorites', verifyJWT, roleCheck(['buyer']), buyerController.addToFavorites);
 router.delete('/favorites/:propertyId', verifyJWT, roleCheck(['buyer']), buyerController.removeFromFavorites);
+router.post('/purchase', verifyJWT, roleCheck(['buyer']), buyerController.purchaseProperty);
 
 export default router;

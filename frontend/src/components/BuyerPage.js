@@ -167,6 +167,39 @@ const BuyerPage = () => {
     }
   };
 
+  const handlePurchase = async (propertyId, price, title) => {
+    try {
+      const token = authService.getToken();
+      const data = {
+        amount: price * 100,
+        currency: 'inr',
+        product: title,
+        propertyId: propertyId
+      };
+
+      const response = await axios.post(
+        'http://localhost:5000/api/buyer/purchase',
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.data && response.data.paymentUrl) {
+        localStorage.setItem('purchaseFlag', response.data.flag);
+        window.location.href = response.data.paymentUrl;
+      } else {
+        throw new Error('No payment URL received');
+      }
+    } catch (error) {
+      console.error('Purchase payment failed:', error);
+      alert('Failed to initiate payment. Please try again.');
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'favorites') {
       fetchFavorites();
@@ -227,6 +260,11 @@ const BuyerPage = () => {
               <p><strong>Description:</strong> {property.description || 'No description provided'}</p>
               <p><strong>Contact:</strong> {property.userEmail || 'Email not provided'}</p>
               <p><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</p>
+              {property.status === 'available' && (
+                <BuyButton onClick={() => handlePurchase(property._id, property.price, property.title)}>
+                  Buy Property
+                </BuyButton>
+              )}
             </div>
           </PropertyCard>
         ))}
@@ -359,6 +397,11 @@ const BuyerPage = () => {
           renderProperties()
         )}
       </div>
+      <footer style={styles.footer}>
+        <div style={styles.footerContent}>
+          © 2024 Real Estate Portal | All rights reserved
+        </div>
+      </footer>
     </div>
   );
 };
@@ -397,6 +440,17 @@ const styles = {
     padding: '1.5rem',
     marginBottom: '2rem',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+  },
+  footer: {
+    backgroundColor: '#f5f5f5',
+    padding: '1rem',
+    textAlign: 'center',
+    color: '#333',
+    fontSize: '0.9rem',
+  }, 
+  footerContent: {
+    maxWidth: '1200px',
+    margin: '0 auto',
   }
 };
 
@@ -474,5 +528,26 @@ const LogoutButton = styled.button`
 
   &:hover {
     background: #c82333;
+  }
+`;
+
+const BuyButton = styled.button`
+  padding: 12px 24px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+
+  &:hover {
+    background: #218838;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
