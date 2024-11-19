@@ -47,12 +47,16 @@ export const getDashboardStats = async (req, res) => {
             userRole
         } = req.query;
 
-        // Build user filter
+        // Build user filter with proper date handling
         let userFilter = {};
         if (userDateFrom || userDateTo) {
             userFilter.createdAt = {};
             if (userDateFrom) userFilter.createdAt.$gte = new Date(userDateFrom);
-            if (userDateTo) userFilter.createdAt.$lte = new Date(userDateTo);
+            if (userDateTo) {
+                const endDate = new Date(userDateTo);
+                endDate.setHours(23, 59, 59, 999);
+                userFilter.createdAt.$lte = endDate;
+            }
         }
         if (userRole) userFilter.role = userRole;
 
