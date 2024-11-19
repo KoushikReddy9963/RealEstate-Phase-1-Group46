@@ -38,16 +38,43 @@ export const deleteUser = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
     try {
-        const users = await User.find().select('-password');
-        const properties = await Property.find().populate('seller');
+        const {
+            userDateFrom,
+            userDateTo,
+            propertyDateFrom,
+            propertyDateTo,
+            propertyStatus,
+            userRole
+        } = req.query;
+
+        // Build user filter
+        let userFilter = {};
+        if (userDateFrom || userDateTo) {
+            userFilter.createdAt = {};
+            if (userDateFrom) userFilter.createdAt.$gte = new Date(userDateFrom);
+            if (userDateTo) userFilter.createdAt.$lte = new Date(userDateTo);
+        }
+        if (userRole) userFilter.role = userRole;
+
+        // Build property filter
+        let propertyFilter = {};
+        if (propertyDateFrom || propertyDateTo) {
+            propertyFilter.createdAt = {};
+            if (propertyDateFrom) propertyFilter.createdAt.$gte = new Date(propertyDateFrom);
+            if (propertyDateTo) propertyFilter.createdAt.$lte = new Date(propertyDateTo);
+        }
+        if (propertyStatus) propertyFilter.status = propertyStatus;
+
+        const users = await User.find(userFilter).select('-password');
+        const properties = await Property.find(propertyFilter).populate('seller');
         const feedbacks = await Feedback.find().populate('user').sort({ createdAt: -1 });
         const employees = users.filter(u => u.role === 'employee');
 
         const stats = {
-            users: users,
-            properties: properties,
-            feedbacks: feedbacks,
-            employees: employees,
+            users,
+            properties,
+            feedbacks,
+            employees,
             totalCounts: {
                 properties: properties.length,
                 buyers: users.filter(u => u.role === 'buyer').length,

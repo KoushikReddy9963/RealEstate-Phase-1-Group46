@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
@@ -6,11 +6,52 @@ import authService from '../services/AuthService';
 import { Card, SubTitle } from '../styles/commonStyles';
 import { colors } from '../styles/commonStyles';
 
+const Input = styled.input`
+  padding: 12px;
+  border: 1.5px solid #999;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 100%;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: ${colors.accent};
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    outline: none;
+  }
+`;
+
+const Select = styled.select`
+  padding: 12px;
+  border: 1.5px solid #999;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 100%;
+  transition: all 0.3s ease;
+  background-color: white;
+
+  &:focus {
+    border-color: ${colors.accent};
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    outline: none;
+  }
+`;
+
 const AdminPage = () => {
   const [stats, setStats] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    userDateFrom: '',
+    userDateTo: '',
+    propertyDateFrom: '',
+    propertyDateTo: '',
+    propertyStatus: '',
+    userRole: '',
+    feedbackDateFrom: '',
+    feedbackDateTo: ''
+  });
   const navigate = useNavigate();
 
   const fetchDashboardData = async () => {
@@ -32,10 +73,145 @@ const AdminPage = () => {
     fetchDashboardData();
   }, []);
 
+  const applyFilters = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = authService.getToken();
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) queryParams.append(key, value);
+      });
+
+      const response = await axios.get(
+        `http://localhost:5000/api/admin/dashboard-stats?${queryParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error applying filters:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     navigate('/');
   };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const FilterSection = styled.div`
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+  `;
+
+  const FilterGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  `;
+
+  const renderUserFilters = () => (
+    <FilterSection>
+      <h3>Filter Users</h3>
+      <FilterGrid>
+        <Input
+          type="date"
+          name="userDateFrom"
+          value={filters.userDateFrom}
+          onChange={handleFilterChange}
+          placeholder="From Date"
+        />
+        <Input
+          type="date"
+          name="userDateTo"
+          value={filters.userDateTo}
+          onChange={handleFilterChange}
+          placeholder="To Date"
+        />
+        <Select
+          name="userRole"
+          value={filters.userRole}
+          onChange={handleFilterChange}
+        >
+          <option value="">All Roles</option>
+          <option value="buyer">Buyer</option>
+          <option value="seller">Seller</option>
+          <option value="employee">Employee</option>
+        </Select>
+      </FilterGrid>
+      <ApplyFilterButton onClick={applyFilters}>Apply Filters</ApplyFilterButton>
+    </FilterSection>
+  );
+
+  const renderPropertyFilters = () => (
+    <FilterSection>
+      <h3>Filter Properties</h3>
+      <FilterGrid>
+        <Input
+          type="date"
+          name="propertyDateFrom"
+          value={filters.propertyDateFrom}
+          onChange={handleFilterChange}
+          placeholder="From Date"
+        />
+        <Input
+          type="date"
+          name="propertyDateTo"
+          value={filters.propertyDateTo}
+          onChange={handleFilterChange}
+          placeholder="To Date"
+        />
+        <Select
+          name="propertyStatus"
+          value={filters.propertyStatus}
+          onChange={handleFilterChange}
+        >
+          <option value="">All Status</option>
+          <option value="available">Available</option>
+          <option value="pending">Pending</option>
+          <option value="sold">Sold</option>
+        </Select>
+      </FilterGrid>
+      <ApplyFilterButton onClick={applyFilters}>Apply Filters</ApplyFilterButton>
+    </FilterSection>
+  );
+
+  const renderFeedbackFilters = () => (
+    <FilterSection>
+      <h3>Filter Feedback</h3>
+      <FilterGrid>
+        <Input
+          type="date"
+          name="feedbackDateFrom"
+          value={filters.feedbackDateFrom}
+          onChange={handleFilterChange}
+          placeholder="From Date"
+        />
+        <Input
+          type="date"
+          name="feedbackDateTo"
+          value={filters.feedbackDateTo}
+          onChange={handleFilterChange}
+          placeholder="To Date"
+        />
+      </FilterGrid>
+      <ApplyFilterButton onClick={applyFilters}>Apply Filters</ApplyFilterButton>
+    </FilterSection>
+  );
 
   const renderDashboard = () => (
     <DashboardGrid>
@@ -137,25 +313,16 @@ const AdminPage = () => {
     <FeedbackContainer>
       {stats?.feedbacks?.map(feedback => (
         <FeedbackCard key={feedback._id}>
-          <FeedbackContent>{feedback.content}</FeedbackContent>
+          <FeedbackContent>{feedback.message}</FeedbackContent>
           <FeedbackDetails>
-            <span>{feedback.user?.name || 'Anonymous'}</span>
+            <span>By: {feedback.user?.name || 'Anonymous'}</span>
+            <span>Rating: {feedback.rating}/5</span>
             <span>{new Date(feedback.createdAt).toLocaleDateString()}</span>
           </FeedbackDetails>
         </FeedbackCard>
       ))}
     </FeedbackContainer>
   );
-
-  const renderContent = () => {
-    switch(activeTab) {
-      case 'dashboard': return renderDashboard();
-      case 'users': return renderUsers();
-      case 'properties': return renderProperties();
-      case 'feedback': return renderFeedback();
-      default: return renderDashboard();
-    }
-  };
 
   if (loading) return <LoadingWrapper>Loading...</LoadingWrapper>;
   if (error) return <ErrorDisplay error={error} onRetry={fetchDashboardData} />;
@@ -182,7 +349,32 @@ const AdminPage = () => {
         </Tab>
       </TabContainer>
 
-      {renderContent()}
+      {activeTab === 'dashboard' && (
+        <DashboardGrid>
+          {renderDashboard()}
+        </DashboardGrid>
+      )}
+
+      {activeTab === 'users' && (
+        <>
+          {renderUserFilters()}
+          {renderUsers()}
+        </>
+      )}
+
+      {activeTab === 'properties' && (
+        <>
+          {renderPropertyFilters()}
+          {renderProperties()}
+        </>
+      )}
+
+      {activeTab === 'feedback' && (
+        <>
+          {renderFeedbackFilters()}
+          {renderFeedback()}
+        </>
+      )}
     </PageContainer>
   );
 };
@@ -420,6 +612,22 @@ const FeedbackCard = styled.div`
   border-radius: 10px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+const ApplyFilterButton = styled.button`
+  padding: 12px 24px;
+  background: ${colors.accent};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 1rem;
+
+  &:hover {
+    background: ${colors.accentDark};
+  }
 `;
 
 // Export the component
