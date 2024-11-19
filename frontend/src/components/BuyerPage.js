@@ -24,7 +24,7 @@ const Input = styled.input`
   padding: 12px;
   border: 1px solid ${colors.border};
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 1.5rem;
   width: 100%;
   transition: all 0.3s ease;
   background-color: white;
@@ -40,7 +40,7 @@ const Select = styled.select`
   padding: 12px;
   border: 1px solid ${colors.border};
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 1.5rem;
   width: 100%;
   transition: all 0.3s ease;
   background-color: white;
@@ -72,12 +72,13 @@ const BuyerPage = () => {
   const navigate = useNavigate();
 
   const TabButton = styled.button`
-    padding: 10px 20px;
-    margin: 0 10px;
+    padding: 8px 16px;
+    margin: 0 8px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 1.5rem;
     transition: all 0.3s ease;
     background: ${props => props.active ? '#007bff' : '#e9ecef'};
     color: ${props => props.active ? 'white' : '#333'};
@@ -283,7 +284,7 @@ const BuyerPage = () => {
 
   const FilterTitle = styled.h3`
     color: ${colors.primary};
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     margin-bottom: 1rem;
   `;
 
@@ -298,6 +299,17 @@ const BuyerPage = () => {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+
+    h3 {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    p {
+      font-size: 1.5rem;
+      margin: 8px 0;
+      line-height: 1.4;
+    }
   `;
 
   const StatusBadge = styled.span`
@@ -306,7 +318,7 @@ const BuyerPage = () => {
     right: 15px;
     padding: 5px 10px;
     border-radius: 15px;
-    font-size: 0.8em;
+    font-size: 1.5em;
     font-weight: 600;
     background-color: ${props => 
       props.status === 'available' ? '#4CAF50' :
@@ -491,9 +503,9 @@ const FavoriteButton = styled.button`
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 8px;
-  width: 40px;
-  height: 40px;
+  padding: 6px;
+  width: 35px;
+  height: 35px;
   background: ${props => props.isFavorite ? '#ff4d4d' : 'white'};
   border: 2px solid ${props => props.isFavorite ? '#ff4d4d' : '#ccc'};
   border-radius: 50%;
@@ -501,7 +513,7 @@ const FavoriteButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 1.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   transition: all 0.3s ease;
   z-index: 2;
@@ -535,22 +547,17 @@ const LogoutButton = styled.button`
 `;
 
 const BuyButton = styled.button`
-  padding: 12px 24px;
+  padding: 8px 16px;
   background: #28a745;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 1.5rem;
   transition: all 0.3s ease;
-  margin-top: 1rem;
+  margin-top: 10px;
 
   &:hover {
     background: #218838;
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
   }
 `;
