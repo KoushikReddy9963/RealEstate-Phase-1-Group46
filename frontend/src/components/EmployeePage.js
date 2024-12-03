@@ -8,6 +8,9 @@ import { colors } from '../styles/AuthStyles';
 import { FaSignOutAlt, FaUpload, FaChartLine, FaList, FaTrash, FaEdit } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { 
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell 
+} from 'recharts';
 
 const EmployeePage = () => {
     const [title, setTitle] = useState('');
@@ -17,6 +20,27 @@ const EmployeePage = () => {
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('upload');
     const [editingId, setEditingId] = useState(null);
+    const [mockData] = useState({
+        monthlyAds: [
+            { month: 'Jan', count: 4 },
+            { month: 'Feb', count: 6 },
+            { month: 'Mar', count: 8 },
+            { month: 'Apr', count: 5 },
+            { month: 'May', count: 9 },
+            { month: 'Jun', count: 7 },
+        ],
+        adPerformance: [
+            { name: 'Views', value: 400 },
+            { name: 'Clicks', value: 300 },
+            { name: 'Conversions', value: 100 },
+        ],
+        transactions: [
+            { id: 'tx_1234', date: '2024-03-15', amount: 99.99, status: 'completed' },
+            { id: 'tx_5678', date: '2024-03-14', amount: 149.99, status: 'completed' },
+            { id: 'tx_9012', date: '2024-03-13', amount: 199.99, status: 'pending' },
+        ]
+    });
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
     
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -272,14 +296,86 @@ const EmployeePage = () => {
 
                 {activeTab === 'stats' && (
                     <ContentSection>
-                        <SectionTitle>Statistics</SectionTitle>
+                        <PageTitle>Statistics & Analytics</PageTitle>
+                        
                         <StatsGrid>
                             <StatCard>
                                 <StatTitle>Total Advertisements</StatTitle>
                                 <StatValue>{advertisements.length}</StatValue>
                             </StatCard>
-                            {/* Add more statistics cards as needed */}
+                            <StatCard>
+                                <StatTitle>Total Revenue</StatTitle>
+                                <StatValue>$1,249.99</StatValue>
+                            </StatCard>
+                            <StatCard>
+                                <StatTitle>Active Campaigns</StatTitle>
+                                <StatValue>12</StatValue>
+                            </StatCard>
                         </StatsGrid>
+
+                        <ChartSection>
+                            <ChartContainer>
+                                <ChartTitle>Monthly Advertisements</ChartTitle>
+                                <BarChart width={500} height={300} data={mockData.monthlyAds}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="month" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="count" fill={colors.accent} />
+                                </BarChart>
+                            </ChartContainer>
+
+                            <ChartContainer>
+                                <ChartTitle>Advertisement Performance</ChartTitle>
+                                <PieChart width={400} height={300}>
+                                    <Pie
+                                        data={mockData.adPerformance}
+                                        cx={200}
+                                        cy={150}
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                        label
+                                    >
+                                        {mockData.adPerformance.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                            </ChartContainer>
+                        </ChartSection>
+
+                        <TransactionSection>
+                            <ChartTitle>Recent Transactions</ChartTitle>
+                            <TransactionTable>
+                                <thead>
+                                    <tr>
+                                        <th>Transaction ID</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {mockData.transactions.map((tx) => (
+                                        <tr key={tx.id}>
+                                            <td>{tx.id}</td>
+                                            <td>{new Date(tx.date).toLocaleDateString()}</td>
+                                            <td>${tx.amount}</td>
+                                            <td>
+                                                <StatusBadge status={tx.status}>
+                                                    {tx.status}
+                                                </StatusBadge>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </TransactionTable>
+                        </TransactionSection>
                     </ContentSection>
                 )}
             </MainContent>
@@ -347,11 +443,6 @@ const ContentSection = styled.div`
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-`;
-
-const SectionTitle = styled.h2`
-    color: ${colors.primary};
-    margin-bottom: 20px;
 `;
 
 const PageTitle = styled.h1`
@@ -545,6 +636,67 @@ const NoDataMessage = styled.p`
     font-size: 1.2rem;
     grid-column: 1 / -1;
     padding: 20px;
+`;
+
+const ChartSection = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 30px 0;
+    justify-content: center;
+`;
+
+const ChartContainer = styled.div`
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+`;
+
+const ChartTitle = styled.h3`
+    color: ${colors.primary};
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+`;
+
+const TransactionSection = styled.div`
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+`;
+
+const TransactionTable = styled.table`
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid ${colors.neutral}20;
+    }
+
+    th {
+        background-color: ${colors.background};
+        color: ${colors.primary};
+        font-weight: 600;
+    }
+
+    tr:hover {
+        background-color: ${colors.background};
+    }
+`;
+
+const StatusBadge = styled.span`
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    text-transform: capitalize;
+    background: ${props => props.status === 'completed' ? '#e1f7e1' : '#fff3e1'};
+    color: ${props => props.status === 'completed' ? '#2e7d32' : '#ed6c02'};
 `;
 
 export default EmployeePage;
