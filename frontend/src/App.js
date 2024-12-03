@@ -1,29 +1,72 @@
-import { Route, Routes } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Homepage from './pages/HomePage';
 import LoginPage from './components/LoginPage';
-import AdminPage from './components/AdminPage';
-import BuyerPage from './components/BuyerPage';
-import EmployeePage from './components/EmployeePage';
-import SellerPage from './components/SellerPage';
 import SignupPage from './components/SignupPage';
-import PrivateRoute from './components/PrivateRoute';
-import AccessDenied from './components/AccessDenied';
-import Advertisement from './components/AdvertisementPage';
+import BuyerPage from './components/BuyerPage';
+import SellerPage from './components/SellerPage';
+import EmployeePage from './components/EmployeePage';
+import AdminPage from './components/AdminPage';
+import AdvertisementPage from './components/AdvertisementPage';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from './redux/slices/authSlice';
 
-function App() {
+const PrivateRoute = ({ children }) => {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+const App = () => {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/admin" element={<PrivateRoute component={AdminPage} role="admin" />} />
-      <Route path="/buyer" element={<PrivateRoute component={BuyerPage} role="buyer" />} />
-      <Route path="/employee" element={<PrivateRoute component={EmployeePage} role="employee" />} />
-      <Route path="/seller" element={<PrivateRoute component={SellerPage} role="seller" />} />
-      <Route path="/Advertise" element={<Advertisement />} />
-      <Route path="/access-denied" element={<AccessDenied />} />
-    </Routes>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/advertise" element={<AdvertisementPage />} />
+
+
+        <Route
+          path="/buyer"
+          element={
+            <PrivateRoute>
+              <BuyerPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/seller"
+          element={
+            <PrivateRoute>
+              <SellerPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/employee"
+          element={
+            <PrivateRoute>
+              <EmployeePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute>
+              <AdminPage />
+            </PrivateRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;

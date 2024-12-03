@@ -9,6 +9,8 @@ import estateAgent from '../assets/estate-agent.png';
 import house from '../assets/house.png';
 import property from '../assets/property.png';
 import search from '../assets/search.png';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../redux/slices/authSlice';
 
 // Styled components
 const PageWrapper = styled.div`
@@ -419,6 +421,7 @@ const BuyerPage = () => {
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleFilterSubmit = async (e) => {
     e.preventDefault();
@@ -650,12 +653,9 @@ const BuyerPage = () => {
   };
 
   const handleLogout = () => {
-    try {
-      authService.logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+    localStorage.removeItem('user');
+    dispatch(logoutUser());
+    navigate('/');
   };
 
   const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata'];

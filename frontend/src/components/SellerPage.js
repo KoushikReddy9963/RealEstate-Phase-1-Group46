@@ -8,6 +8,8 @@ import { BiDollar } from 'react-icons/bi';
 import { MdAddAPhoto } from 'react-icons/md';
 import { GiDreamCatcher } from 'react-icons/gi';
 import { colors } from '../styles/AuthStyles';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../redux/slices/authSlice';
 
 
 const AppContainer = styled.div`
@@ -424,6 +426,7 @@ export const logoutSound = () => {
   audio.play().catch(e => console.log('Audio play failed:', e));
 };
 const SellerPage = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [view, setView] = useState('add');
   const [myProperties, setMyProperties] = useState([]);
@@ -452,10 +455,9 @@ const SellerPage = () => {
 
   const handleLogout = () => {
     logoutSound();
-    setTimeout(() => {
-      localStorage.removeItem('user');
-      navigate('/');
-    }, 500);
+    localStorage.removeItem('user');
+    dispatch(logoutUser());
+    navigate('/');
   };
 
   const handleAdvertise = async (propertyId, price, title) => {

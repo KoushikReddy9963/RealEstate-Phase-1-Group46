@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getToken } from '../services/AuthService';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../redux/slices/authSlice';
 
 const EmployeePage = () => {
     const [title, setTitle] = useState('');
@@ -10,6 +12,7 @@ const EmployeePage = () => {
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate(); // Used for future navigation implementation
+    const dispatch = useDispatch();
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -132,6 +135,7 @@ const EmployeePage = () => {
     };
     const handleLogout = () => {
         localStorage.removeItem('user');
+        dispatch(logoutUser());
         navigate('/');
     };
 

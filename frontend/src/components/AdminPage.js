@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import authService from '../services/AuthService';
 import { Card, SubTitle } from '../styles/commonStyles';
 import { colors } from '../styles/commonStyles';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../redux/slices/authSlice';
 
 const Input = styled.input`
   padding: 12px;
@@ -53,6 +55,7 @@ const AdminPage = () => {
     feedbackDateTo: ''
   });
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const fetchDashboardData = async () => {
     try {
@@ -98,6 +101,7 @@ const AdminPage = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    dispatch(logoutUser());
     navigate('/');
   };
 

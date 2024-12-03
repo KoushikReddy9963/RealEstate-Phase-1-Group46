@@ -4,26 +4,70 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authStyles as styles } from '../styles/AuthStyles';
 import { FaUser, FaLock } from 'react-icons/fa';
 import { playLoginSound } from '../utils/soundEffects';
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../redux/slices/authSlice';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            const response = await axios.post('http://localhost:5000/api/users/login', { email, password });
-            localStorage.setItem('user', JSON.stringify(response.data));
-            playLoginSound();
-            setTimeout(() => {
-                const role = response.data.user.role;
-                navigate(`/${role}`);
-            }, 500);
+            const response = await axios.post('http://localhost:5000/api/users/login', { 
+                email, 
+                password 
+            });
+
+            if (response.data && response.data.user) {
+                // Store user data in localStorage
+                localStorage.setItem('user', JSON.stringify(response.data));
+                
+                // Dispatch to Redux
+                await dispatch(loginUser(response.data));
+                
+                // Play sound effect
+                playLoginSound();
+                
+                // Get role and navigate
+                const role = response.data.user.role.toLowerCase(); // Ensure lowercase
+                console.log('Navigating to role:', role); // Debug log
+                
+                // Navigate based on role
+                switch(role) {
+                    case 'buyer':
+                        navigate('/buyer');
+                        break;
+                    case 'seller':
+                        navigate('/seller');
+                        break;
+                    case 'employee':
+                        navigate('/employee');
+                        break;
+                    case 'admin':
+                        navigate('/admin');
+                        break;
+                    default:
+                        setError('Invalid user role');
+                        console.error('Invalid role:', role);
+                }
+            } else {
+                setError('Invalid response from server');
+                console.error('Invalid response:', response.data);
+            }
         } catch (err) {
-            setError('Invalid email or password');
+            console.error('Login error:', err); // Debug log
+            if (err.response) {
+                setError(err.response.data.message || 'Invalid email or password');
+            } else if (err.request) {
+                setError('Unable to connect to server. Please try again.');
+            } else {
+                setError('An error occurred. Please try again.');
+            }
         }
     };
 
