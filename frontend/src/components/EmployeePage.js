@@ -16,6 +16,7 @@ const EmployeePage = () => {
     const [advertisements, setAdvertisements] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('upload');
+    const [editingId, setEditingId] = useState(null);
     
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -29,43 +30,23 @@ const EmployeePage = () => {
         try {
             const userData = localStorage.getItem('user');
             if (!userData) {
-                console.error('No user data found in localStorage');
+                console.error('No user data found');
                 handleLogout();
                 return;
             }
 
             const user = JSON.parse(userData);
-            if (!user.token) {
-                console.error('No token found in user data');
-                handleLogout();
-                return;
-            }
-
-            console.log('Fetching with token:', user.token); // Debug log
-
-            const response = await axios.get('http://localhost:5000/api/adv/Advertisement', {
+            const response = await axios.get('http://localhost:5000/api/employee/advertisements', {
                 headers: { 
-                    'Authorization': `Bearer ${user.token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${user.token}`
                 }
             });
 
-            console.log('Response:', response.data); // Debug log
+            console.log('Fetched advertisements:', response.data);
             setAdvertisements(response.data);
-            
         } catch (error) {
-            console.error('Fetch error:', error); // Debug log
-            if (error.response) {
-                console.error('Error response:', error.response.data);
-                toast.error(error.response.data.message || 'Failed to fetch advertisements');
-            } else if (error.request) {
-                console.error('No response received:', error.request);
-                toast.error('Network error - please check your connection');
-            } else {
-                console.error('Error:', error.message);
-                toast.error('An error occurred while fetching advertisements');
-            }
-
+            console.error('Fetch error:', error);
+            toast.error('Failed to fetch advertisements');
             if (error.response?.status === 401) {
                 handleLogout();
             }
@@ -91,7 +72,9 @@ const EmployeePage = () => {
         try {
             const formData = new FormData();
             formData.append('title', title);
-            formData.append('image', image);
+            if (image) {
+                formData.append('image', image);
+            }
 
             const userData = localStorage.getItem('user');
             const user = JSON.parse(userData);
@@ -100,21 +83,36 @@ const EmployeePage = () => {
                 throw new Error('No token found');
             }
 
-            await axios.post('http://localhost:5000/api/adv/Advertisement', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${user.token}`
-                }
-            });
+            if (editingId) {
+                // Update existing advertisement
+                await axios.put(`http://localhost:5000/api/employee/advertisement/${editingId}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                });
+                toast.success('Advertisement updated successfully!');
+            } else {
+                // Create new advertisement
+                await axios.post('http://localhost:5000/api/employee/advertisement', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${user.token}`
+                    }
+                });
+                toast.success('Advertisement created successfully!');
+            }
 
-            toast.success('Advertisement uploaded successfully!');
+            // Reset form
             setTitle('');
             setImage(null);
             setPreview(null);
+            setEditingId(null);
             fetchAdvertisements();
+            setActiveTab('list');
         } catch (error) {
-            console.error('Upload error:', error);
-            toast.error(error.response?.data?.message || 'Failed to upload advertisement');
+            console.error('Submit error:', error);
+            toast.error(error.response?.data?.message || 'Failed to process advertisement');
             if (error.response?.status === 401) {
                 handleLogout();
             }
@@ -123,21 +121,40 @@ const EmployeePage = () => {
         }
     };
 
+    const handleEdit = async (id) => {
+        try {
+            const adToEdit = advertisements.find(ad => ad._id === id);
+            if (adToEdit) {
+                setTitle(adToEdit.title);
+                setPreview(`data:image/jpeg;base64,${adToEdit.content}`);
+                setImage(null); // Reset image since we don't need to upload unless changed
+                setEditingId(id);
+                setActiveTab('upload');
+            }
+        } catch (error) {
+            console.error('Edit error:', error);
+            toast.error('Failed to load advertisement for editing');
+        }
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this advertisement?')) {
             try {
-                const token = JSON.parse(localStorage.getItem('user'))?.token;
-                if (!token) {
-                    throw new Error('No token found');
-                }
+                const userData = localStorage.getItem('user');
+                const user = JSON.parse(userData);
+                
                 await axios.delete(`http://localhost:5000/api/employee/advertisement/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: { 
+                        'Authorization': `Bearer ${user.token}`
+                    }
                 });
+                
                 toast.success('Advertisement deleted successfully');
                 fetchAdvertisements();
             } catch (error) {
+                console.error('Delete error:', error);
                 toast.error('Failed to delete advertisement');
-                if (error.response && error.response.status === 401) {
+                if (error.response?.status === 401) {
                     handleLogout();
                 }
             }
@@ -176,11 +193,11 @@ const EmployeePage = () => {
                 
                 {activeTab === 'upload' && (
                     <ContentSection>
-                        <SectionTitle>Upload New Advertisement</SectionTitle>
-                        <Form onSubmit={handleSubmit}>
+                        <PageTitle>Upload New Advertisement</PageTitle>
+                        <StyledForm onSubmit={handleSubmit}>
                             <FormGroup>
-                                <Label>Advertisement Title</Label>
-                                <Input
+                                <StyledLabel>Advertisement Title</StyledLabel>
+                                <StyledInput
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
@@ -190,49 +207,65 @@ const EmployeePage = () => {
                             </FormGroup>
 
                             <FormGroup>
-                                <Label>Upload Image</Label>
-                                <FileInput
+                                <StyledLabel>Upload Image</StyledLabel>
+                                <StyledFileInput
                                     type="file"
                                     onChange={handleFileChange}
                                     accept="image/*"
-                                    required
+                                    required={!editingId}
                                 />
                             </FormGroup>
 
                             {preview && (
-                                <PreviewImage src={preview} alt="Preview" />
+                                <PreviewContainer>
+                                    <PreviewImage src={preview} alt="Preview" />
+                                </PreviewContainer>
                             )}
 
                             <SubmitButton type="submit" disabled={loading}>
-                                {loading ? 'Uploading...' : 'Submit Advertisement'}
+                                {loading ? 'Processing...' : (editingId ? 'Update Advertisement' : 'Submit Advertisement')}
                             </SubmitButton>
-                        </Form>
+                        </StyledForm>
                     </ContentSection>
                 )}
 
                 {activeTab === 'list' && (
                     <ContentSection>
-                        <SectionTitle>Advertisement List</SectionTitle>
+                        <PageTitle>Advertisement List</PageTitle>
                         <Grid>
-                            {advertisements.map((ad) => (
-                                <Card key={ad._id}>
-                                    <CardImage src={ad.imageUrl} alt={ad.title} />
-                                    <CardContent>
-                                        <CardTitle>{ad.title}</CardTitle>
-                                        <CardDate>
-                                            Posted: {new Date(ad.createdAt).toLocaleDateString()}
-                                        </CardDate>
-                                        <CardActions>
-                                            <ActionButton onClick={() => handleDelete(ad._id)}>
-                                                <FaTrash /> Delete
-                                            </ActionButton>
-                                            <ActionButton>
-                                                <FaEdit /> Edit
-                                            </ActionButton>
-                                        </CardActions>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                            {advertisements.length > 0 ? (
+                                advertisements.map((ad) => (
+                                    <Card key={ad._id}>
+                                        <CardImage 
+                                            src={`data:image/jpeg;base64,${ad.content}`} 
+                                            alt={ad.title} 
+                                            onError={(e) => {
+                                                console.error('Image load error');
+                                                e.target.src = 'fallback-image-url.jpg';
+                                            }}
+                                        />
+                                        <CardContent>
+                                            <CardTitle>{ad.title}</CardTitle>
+                                            <CardDate>
+                                                Posted: {new Date(ad.createdAt).toLocaleDateString()}
+                                            </CardDate>
+                                            <CardActions>
+                                                <ActionButton onClick={() => handleEdit(ad._id)}>
+                                                    <FaEdit /> Edit
+                                                </ActionButton>
+                                                <ActionButton 
+                                                    onClick={() => handleDelete(ad._id)}
+                                                    style={{ background: colors.error }}
+                                                >
+                                                    <FaTrash /> Delete
+                                                </ActionButton>
+                                            </CardActions>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            ) : (
+                                <NoDataMessage>No advertisements found</NoDataMessage>
+                            )}
                         </Grid>
                     </ContentSection>
                 )}
@@ -254,7 +287,7 @@ const EmployeePage = () => {
     );
 };
 
-// Styled Components
+// Enhanced Styled Components
 const PageContainer = styled.div`
     display: flex;
     min-height: 100vh;
@@ -321,47 +354,76 @@ const SectionTitle = styled.h2`
     margin-bottom: 20px;
 `;
 
-const Form = styled.form`
+const PageTitle = styled.h1`
+    font-size: 2.5rem;
+    color: ${colors.primary};
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 600;
+`;
+
+const StyledForm = styled.form`
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 25px;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const FormGroup = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
 `;
 
-const Label = styled.label`
-    color: ${colors.neutral};
+const StyledLabel = styled.label`
+    font-size: 1.2rem;
+    color: ${colors.primary};
     font-weight: 500;
 `;
 
-const Input = styled.input`
-    padding: 12px;
-    border: 1.5px solid ${colors.neutral};
-    border-radius: 8px;
-    font-size: 1rem;
+const StyledInput = styled.input`
+    padding: 15px;
+    border: 2px solid ${colors.neutral}40;
+    border-radius: 10px;
+    font-size: 1.1rem;
     transition: all 0.3s ease;
 
     &:focus {
         border-color: ${colors.accent};
+        box-shadow: 0 0 0 4px ${colors.accent}20;
         outline: none;
     }
 `;
 
-const FileInput = styled.input`
+const StyledFileInput = styled.input`
     padding: 12px;
-    border: 1.5px solid ${colors.neutral};
-    border-radius: 8px;
+    border: 2px dashed ${colors.neutral}40;
+    border-radius: 10px;
     background: ${colors.background};
+    cursor: pointer;
+    font-size: 1.1rem;
+
+    &:hover {
+        border-color: ${colors.accent};
+    }
+`;
+
+const PreviewContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
 `;
 
 const PreviewImage = styled.img`
-    max-width: 300px;
-    border-radius: 8px;
-    margin-top: 10px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const SubmitButton = styled.button`
@@ -390,52 +452,65 @@ const Grid = styled.div`
 `;
 
 const Card = styled.div`
-    background: ${colors.white};
-    border-radius: 12px;
+    background: white;
+    border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+    }
 `;
 
 const CardImage = styled.img`
     width: 100%;
-    height: 200px;
+    height: 250px;
     object-fit: cover;
 `;
 
 const CardContent = styled.div`
-    padding: 15px;
+    padding: 20px;
 `;
 
 const CardTitle = styled.h3`
+    font-size: 1.5rem;
     color: ${colors.primary};
     margin-bottom: 10px;
 `;
 
 const CardDate = styled.p`
+    font-size: 1rem;
     color: ${colors.neutral};
-    font-size: 0.9rem;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 `;
 
 const CardActions = styled.div`
     display: flex;
-    gap: 10px;
+    gap: 15px;
+    justify-content: flex-end;
 `;
 
 const ActionButton = styled.button`
-    padding: 8px 12px;
+    padding: 10px 20px;
     background: ${colors.accent};
-    color: ${colors.white};
+    color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    font-size: 1rem;
     transition: all 0.3s ease;
 
     &:hover {
         background: ${colors.gold};
+        transform: translateY(-2px);
+    }
+
+    svg {
+        font-size: 1.2rem;
     }
 `;
 
@@ -462,6 +537,14 @@ const StatValue = styled.div`
     color: ${colors.primary};
     font-size: 2rem;
     font-weight: bold;
+`;
+
+const NoDataMessage = styled.p`
+    text-align: center;
+    color: ${colors.neutral};
+    font-size: 1.2rem;
+    grid-column: 1 / -1;
+    padding: 20px;
 `;
 
 export default EmployeePage;
