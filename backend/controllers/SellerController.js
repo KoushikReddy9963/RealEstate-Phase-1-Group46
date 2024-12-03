@@ -1,8 +1,10 @@
 import Property from '../models/Property.js';
+import Purchase from '../models/Purchase.js';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import AdvertisementRequest from '../models/AdvertisementRequest.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,7 +12,9 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
-// Add this after your existing exports
+// Define the frontend URL explicitly
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
 export const purchaseProperty = async (req, res) => {
     try {
         const { amount, currency, product, propertyId } = req.body;
@@ -29,11 +33,11 @@ export const purchaseProperty = async (req, res) => {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: 'http://localhost:3000/payment-success',
-            cancel_url: 'http://localhost:3000/payment-cancel',
+            success_url: `${FRONTEND_URL}/payment-success`,
+            cancel_url: `${FRONTEND_URL}/payment-cancel`,
             metadata: {
-                propertyId: propertyId,
-                buyerId: userId
+                propertyId: propertyId.toString(),
+                buyerId: userId.toString()
             }
         });
 
@@ -55,7 +59,6 @@ export const purchaseProperty = async (req, res) => {
         res.status(500).json({ message: 'Failed to initiate purchase' });
     }
 };
-
 
 export const addProperty = async (req, res) => {
     const { 
@@ -109,17 +112,16 @@ export const deleteProperty = async (req, res) => {
     } catch (error) {
         res.status(400).json({ success: false, message: 'Failed to delete property' });
     }
-}
+};
 
 export const myProperties = async (req, res) => {
     try {
         const properties = await Property.find({ seller: req.user.id });
         res.status(200).json(properties);
-        console.log
     } catch (error) {
         res.status(400).json({ success: false, message: 'Failed to fetch properties' });
     }
-}
+};
 
 export const getMyProperties = async (req, res) => {
     try {
@@ -171,8 +173,14 @@ export const updatePropertyStatus = async (req, res) => {
 
 export const advertiseProperty = async (req, res) => {
     try {
-        const { amount, currency, product, propertyId } = req.body;
+        const { amount, currency, title, image, propertyId } = req.body;
         const userId = req.user.id;
+
+        // First, verify the property exists and get its details
+        const property = await Property.findOne({ _id: propertyId, seller: userId });
+        if (!property) {
+            return res.status(404).json({ message: 'Property not found' });
+        }
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -180,38 +188,58 @@ export const advertiseProperty = async (req, res) => {
                 price_data: {
                     currency: currency || 'inr',
                     product_data: {
-                        name: `Advertisement: ${product}`,
+                        name: `Advertisement: ${property.title}`,
                     },
                     unit_amount: amount,
                 },
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: 'http://localhost:3000/payment-success',
-            cancel_url: 'http://localhost:3000/payment-cancel',
+            success_url: `${FRONTEND_URL}/payment-success`,
+            cancel_url: `${FRONTEND_URL}/payment-cancel`,
             metadata: {
-                propertyId: propertyId,
-                sellerId: userId,
+                propertyId: propertyId.toString(),
+                sellerId: userId.toString(),
                 type: 'advertisement'
             }
         });
 
-        // Update property advertisement status
-        await Property.findOneAndUpdate(
-            { _id: propertyId, seller: userId },
-            { 
-                isAdvertised: true,
-                advertisementDate: new Date(),
-                stripeSessionId: session.id
-            }
-        );
+        // Create a new advertisement request with all required fields
+        const advertisementRequest = new AdvertisementRequest({
+            property: propertyId,
+            seller: userId,
+            amount: amount / 100,
+            status: 'pending',
+            stripeSessionId: session.id,
+            title: property.title,        // Use property title
+            image: property.image,        // Use property image
+            description: property.description || 'Property Advertisement'
+        });
+
+        await advertisementRequest.save();
 
         res.json({
             paymentUrl: session.url,
-            flag: session.id
+            requestId: advertisementRequest._id
         });
     } catch (error) {
         console.error('Advertisement payment failed:', error);
-        res.status(500).json({ message: 'Failed to initiate advertisement payment' });
+        res.status(500).json({ 
+            message: 'Failed to initiate advertisement payment',
+            error: error.message 
+        });
+    }
+};
+
+export const getAdvertisementStatus = async (req, res) => {
+    try {
+        const advertisements = await AdvertisementRequest.find({
+            seller: req.user.id
+        }).select('propertyId status');
+        
+        res.status(200).json(advertisements);
+    } catch (error) {
+        console.error('Failed to fetch advertisement status:', error);
+        res.status(500).json({ message: 'Failed to fetch advertisement status' });
     }
 };

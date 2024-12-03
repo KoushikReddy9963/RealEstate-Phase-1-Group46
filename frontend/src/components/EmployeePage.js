@@ -41,6 +41,7 @@ const EmployeePage = () => {
         ]
     });
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+    const [advertisementRequests, setAdvertisementRequests] = useState([]);
     
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -184,6 +185,66 @@ const EmployeePage = () => {
             }
         }
     };
+
+    const fetchAdvertisementRequests = useCallback(async () => {
+        try {
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                handleLogout();
+                return;
+            }
+
+            const { token } = JSON.parse(userData);
+            const response = await axios.get(
+                'http://localhost:5000/api/employee/advertisement-requests',
+                {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }
+            );
+            setAdvertisementRequests(response.data);
+        } catch (error) {
+            console.error('Error fetching advertisement requests:', error);
+            toast.error('Failed to fetch advertisement requests');
+        }
+    }, [handleLogout]);
+
+    const handleStatusUpdate = async (requestId, status) => {
+        try {
+            setLoading(true);
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                toast.error('User session expired. Please login again.');
+                handleLogout();
+                return;
+            }
+
+            const { token } = JSON.parse(userData);
+            console.log(token);
+            const updateResponse = await axios.patch(
+                'http://localhost:5000/api/employee/advertisement-request/status',
+                { requestId, status },
+                { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }}
+            );
+
+            if (updateResponse.data.success) {
+                toast.success(`Advertisement request ${status} successfully`);
+                await fetchAdvertisementRequests();
+                await fetchAdvertisements();
+            } else {
+                throw new Error('Failed to update request status');
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Update useEffect to include both functions in dependency array
+    useEffect(() => {
+        fetchAdvertisementRequests();
+        fetchAdvertisements();
+    }, [fetchAdvertisementRequests, fetchAdvertisements]);
 
     return (
         <PageContainer>
@@ -379,6 +440,51 @@ const EmployeePage = () => {
                     </ContentSection>
                 )}
             </MainContent>
+
+            <RequestsSection>
+                <h2>Advertisement Requests</h2>
+                {loading ? (
+                    <LoadingMessage>Loading requests...</LoadingMessage>
+                ) : advertisementRequests.length === 0 ? (
+                    <NoDataMessage>No advertisement requests found</NoDataMessage>
+                ) : (
+                    <RequestsGrid>
+                        {advertisementRequests.map(request => (
+                            <RequestCard key={request._id}>
+                                <RequestImage 
+                                    src={`data:image/jpeg;base64,${request.property.image}`} 
+                                    alt={request.property.title}
+                                />
+                                <RequestInfo>
+                                    <h3>{request.property.title}</h3>
+                                    <p>Seller: {request.seller.email}</p>
+                                    <StatusBadge status={request.status}>
+                                        {request.status.toUpperCase()}
+                                    </StatusBadge>
+                                </RequestInfo>
+                                {request.status === 'pending' && (
+                                    <RequestActions>
+                                        <RequestActionButton 
+                                            className="approve"
+                                            onClick={() => handleStatusUpdate(request._id, 'approved')}
+                                            disabled={loading}
+                                        >
+                                            Approve
+                                        </RequestActionButton>
+                                        <RequestActionButton 
+                                            className="reject"
+                                            onClick={() => handleStatusUpdate(request._id, 'rejected')}
+                                            disabled={loading}
+                                        >
+                                            Reject
+                                        </RequestActionButton>
+                                    </RequestActions>
+                                )}
+                            </RequestCard>
+                        ))}
+                    </RequestsGrid>
+                )}
+            </RequestsSection>
         </PageContainer>
     );
 };
@@ -690,13 +796,102 @@ const TransactionTable = styled.table`
     }
 `;
 
-const StatusBadge = styled.span`
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    text-transform: capitalize;
-    background: ${props => props.status === 'completed' ? '#e1f7e1' : '#fff3e1'};
-    color: ${props => props.status === 'completed' ? '#2e7d32' : '#ed6c02'};
+
+const RequestsSection = styled.div`
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 `;
+
+const RequestsGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+`;
+
+const RequestCard = styled.div`
+    border: 1px solid ${colors.neutral}20;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+const RequestImage = styled.img`
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+`;
+
+const RequestInfo = styled.div`
+    padding: 15px;
+    h3 {
+        margin: 0 0 10px;
+        color: ${colors.primary};
+    }
+    p {
+        margin: 5px 0;
+        color: ${colors.neutral};
+    }
+`;
+
+const StatusBadge = styled.span`
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: ${props => {
+        switch(props.status) {
+            case 'approved': return '#e1f7e1';
+            case 'rejected': return '#ffe1e1';
+            default: return '#fff3e1';
+        }
+    }};
+    color: ${props => {
+        switch(props.status) {
+            case 'approved': return '#2e7d32';
+            case 'rejected': return '#d32f2f';
+            default: return '#ed6c02';
+        }
+    }};
+`;
+
+const RequestActions = styled.div`
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+`;
+
+const RequestActionButton = styled.button`
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    
+    &.approve {
+        background: #28a745;
+        color: white;
+        &:hover { background: #218838; }
+    }
+    
+    &.reject {
+        background: #dc3545;
+        color: white;
+        &:hover { background: #c82333; }
+    }
+`;
+
+const LoadingMessage = styled.div`
+    text-align: center;
+    padding: 20px;
+    color: ${colors.neutral};
+`;
+
 
 export default EmployeePage;

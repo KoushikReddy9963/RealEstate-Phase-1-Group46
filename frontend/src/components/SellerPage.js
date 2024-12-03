@@ -3,13 +3,15 @@ import axios from 'axios';
 import authService from '../services/AuthService';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { FaHome, FaMapMarkerAlt, FaBed, FaBath, FaRulerCombined, FaBuilding, FaQuoteLeft, FaQuoteRight, FaMagic } from 'react-icons/fa';
+import { FaHome, FaMapMarkerAlt, FaBed, FaBath, FaRulerCombined, FaBuilding, FaQuoteLeft, FaQuoteRight, FaMagic, FaCheckCircle, FaClock, FaTimesCircle, FaBullhorn, FaRedo } from 'react-icons/fa';
 import { BiDollar } from 'react-icons/bi';
 import { MdAddAPhoto } from 'react-icons/md';
 import { GiDreamCatcher } from 'react-icons/gi';
 import { colors } from '../styles/AuthStyles';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../redux/slices/authSlice';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const AppContainer = styled.div`
@@ -217,58 +219,139 @@ const PropertiesGrid = styled.div`
 const PropertyCard = styled.div`
   background: white;
   border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 25px;
   transition: all 0.3s ease;
-  animation: slideUp 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
   }
 
-  img {
-    border-radius: 10px;
-    margin-bottom: 15px;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: ${colors.secondary};
+    border-radius: 15px 15px 0 0;
   }
+`;
 
-  h3 {
-    color: ${colors.primary};
-    margin-bottom: 10px;
-    font-size: 18px;
-  }
+const PropertyImage = styled.img`
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const PropertyTitle = styled.h3`
+  font-size: 24px;
+  color: ${colors.primary};
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+`;
+
+const PropertyDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 
   p {
-    color: ${colors.neutral};
-    margin: 5px 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    font-size: 16px;
+    margin: 0;
+    color: ${colors.neutral};
+    
+    svg {
+      font-size: 20px;
+      color: ${colors.secondary};
+    }
   }
 `;
 
-const StatusSelect = styled.select`
-  padding: 12px;
-  border: 1px solid #e0e0e0;
+const PriceTag = styled.div`
+  font-size: 26px;
+  font-weight: 600;
+  color: ${colors.primary};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    color: ${colors.secondary};
+    font-size: 24px;
+  }
+`;
+
+const StatusBadge = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  background: ${props => {
+    switch(props.status) {
+      case 'available': return '#28a745';
+      case 'pending': return '#ffc107';
+      case 'sold': return '#dc3545';
+      default: return '#6c757d';
+    }
+  }};
+`;
+
+const AdStatusBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
   border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  background-color: white;
-
-  &:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-    outline: none;
-  }
-`;
-
-const FormSection = styled.div`
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  margin-bottom: 2rem;
-  width: 100%;
+  font-size: 15px;
+  font-weight: 500;
+  margin-top: 10px;
+  
+  ${props => {
+    switch(props.status) {
+      case 'approved':
+        return `
+          background: #d4edda;
+          color: #155724;
+          border: 1px solid #c3e6cb;
+        `;
+      case 'pending':
+        return `
+          background: #fff3cd;
+          color: #856404;
+          border: 1px solid #ffeeba;
+        `;
+      case 'rejected':
+        return `
+          background: #f8d7da;
+          color: #721c24;
+          border: 1px solid #f5c6cb;
+        `;
+      default:
+        return `
+          background: #e2e3e5;
+          color: #383d41;
+          border: 1px solid #d6d8db;
+        `;
+    }
+  }}
 `;
 
 const AdvertiseButton = styled.button`
@@ -341,23 +424,6 @@ const FileInput = styled.div`
   }
 `;
 
-const PropertyDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  p {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    
-    svg {
-      font-size: 1.1rem;
-      color: ${colors.secondary};
-    }
-  }
-`;
-
 const PageHeader = styled.div`
   text-align: center;
   margin: 20px 0 40px 0;
@@ -421,10 +487,50 @@ const SubHeading = styled.p`
   }
 `;
 
+const PendingButton = styled(AdvertiseButton)`
+  background: #ffc107;
+  color: #000;
+  &:hover {
+    background: #e0a800;
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const ApprovedButton = styled(AdvertiseButton)`
+  background: #28a745;
+  &:hover {
+    background: #218838;
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const RejectedButton = styled(AdvertiseButton)`
+  background: #dc3545;
+  &:hover {
+    background: #c82333;
+  }
+`;
+
 export const logoutSound = () => {
   const audio = new Audio('/sounds/logout.mp3');
   audio.play().catch(e => console.log('Audio play failed:', e));
 };
+
+const FormSection = styled.div`
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  width: 100%;
+`;
+
 const SellerPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -444,6 +550,7 @@ const SellerPage = () => {
   });
   const [image, setImage] = useState(null);
   const [message, setMessage] = useState('');
+  const [advertisementRequests, setAdvertisementRequests] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -460,28 +567,31 @@ const SellerPage = () => {
     navigate('/');
   };
 
-  const handleAdvertise = async (propertyId, price, title) => {
-    const token = authService.getToken();
-    const data = {
-      amount: 10000,
-      currency: 'usd',
-      product: `Advertisement for: ${title}`,
-      propertyId: propertyId
-    };
-
+  const handleAdvertise = async (propertyId, price, title, image) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/seller/advertise', data, {
+      const token = authService.getToken();
+      
+      const adRequestResponse = await axios.post('http://localhost:5000/api/seller/advertise', {
+        propertyId,
+        amount: 10000,
+        currency: 'usd',
+        title,
+        image,
+        product: `Advertisement for: ${title}`
+      }, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-      const paymentUrl = response.data.paymentUrl;
-      localStorage.setItem('flag', response.data.flag);
-      window.location.href = paymentUrl;
+
+      localStorage.setItem('advertisementRequestId', adRequestResponse.data.requestId);
+      window.location.href = adRequestResponse.data.paymentUrl;
+      
+      toast.success('Advertisement request sent successfully!');
     } catch (error) {
-      console.error('Advertisement payment failed:', error);
-      alert('Failed to initiate advertisement payment. Please try again.');
+      console.error('Advertisement request failed:', error);
+      toast.error('Failed to initiate advertisement request');
     }
   };
 
@@ -539,9 +649,23 @@ const SellerPage = () => {
     }
   };
 
+  const fetchAdvertisementRequests = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.get('http://localhost:5000/api/seller/advertisement-status', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAdvertisementRequests(response.data);
+    } catch (error) {
+      console.error('Failed to fetch advertisement requests:', error);
+      toast.error('Failed to load advertisement status');
+    }
+  };
+
   useEffect(() => {
     if (view === 'my-properties') {
       fetchMyProperties();
+      fetchAdvertisementRequests();
     }
   }, [view]);
 
@@ -553,9 +677,16 @@ const SellerPage = () => {
         { headers: { Authorization: `Bearer ${token}` }}
       );
       fetchMyProperties();
+      toast.success('Property status updated successfully');
     } catch (error) {
       console.error('Error updating property status:', error);
+      toast.error('Failed to update property status');
     }
+  };
+
+  const getRequestStatus = (propertyId) => {
+    const request = advertisementRequests.find(req => req.property === propertyId);
+    return request ? request.status : null;
   };
 
   return (
@@ -703,38 +834,100 @@ const SellerPage = () => {
             <LoadingMessage>Loading...</LoadingMessage>
           ) : (
             <PropertiesGrid>
-              {myProperties.map(property => (
-                <PropertyCard key={property._id}>
-                  {property.image && (
-                    <img 
-                      src={`data:image/jpeg;base64,${property.image}`}
-                      alt={property.title}
-                      style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-                    />
-                  )}
-                  <h3>{property.title}</h3>
-                  <PropertyDetails>
-                    <p><BiDollar /> Price: ₹{property.price}</p>
-                    <p><FaMapMarkerAlt /> {property.location}</p>
-                    {property.bedrooms && <p><FaBed /> {property.bedrooms} Bedrooms</p>}
-                    {property.bathrooms && <p><FaBath /> {property.bathrooms} Bathrooms</p>}
-                    {property.area && <p><FaRulerCombined /> {property.area} sq ft</p>}
-                  </PropertyDetails>
-                  <StatusSelect
-                    value={property.status || 'available'}
-                    onChange={(e) => updatePropertyStatus(property._id, e.target.value)}
-                  >
-                    <option value="available">Available</option>
-                    <option value="pending">Pending</option>
-                    <option value="sold">Sold</option>
-                  </StatusSelect>
-                  <AdvertiseButton 
-                    onClick={() => handleAdvertise(property._id, property.price, property.title)}
-                  >
-                    Advertise Property
-                  </AdvertiseButton>
-                </PropertyCard>
-              ))}
+              {myProperties.map(property => {
+                const adStatus = getRequestStatus(property._id);
+                return (
+                  <PropertyCard key={property._id}>
+                    <StatusBadge status={property.status || 'available'}>
+                      {property.status || 'Available'}
+                    </StatusBadge>
+                    
+                    {property.image && (
+                      <PropertyImage 
+                        src={`data:image/jpeg;base64,${property.image}`}
+                        alt={property.title}
+                      />
+                    )}
+                    
+                    <PropertyTitle>{property.title}</PropertyTitle>
+                    
+                    <PriceTag>
+                      <BiDollar />
+                      ₹{property.price.toLocaleString()}
+                    </PriceTag>
+                    
+                    <PropertyDetails>
+                      <p>
+                        <FaMapMarkerAlt />
+                        {property.location}
+                      </p>
+                      {property.bedrooms && (
+                        <p>
+                          <FaBed />
+                          {property.bedrooms} Bedrooms
+                        </p>
+                      )}
+                      {property.bathrooms && (
+                        <p>
+                          <FaBath />
+                          {property.bathrooms} Bathrooms
+                        </p>
+                      )}
+                      {property.area && (
+                        <p>
+                          <FaRulerCombined />
+                          {property.area} sq ft
+                        </p>
+                      )}
+                    </PropertyDetails>
+
+                    <AdStatusBadge status={adStatus}>
+                      {adStatus === 'approved' && <FaCheckCircle />}
+                      {adStatus === 'pending' && <FaClock />}
+                      {adStatus === 'rejected' && <FaTimesCircle />}
+                      {adStatus ? `Advertisement ${adStatus}` : 'Not Advertised'}
+                    </AdStatusBadge>
+
+                    {!adStatus && (
+                      <AdvertiseButton 
+                        onClick={() => handleAdvertise(
+                          property._id,
+                          property.price,
+                          property.title,
+                          property.image
+                        )}
+                      >
+                        <FaBullhorn /> Advertise Property
+                      </AdvertiseButton>
+                    )}
+                    
+                    {adStatus === 'pending' && (
+                      <PendingButton disabled>
+                        <FaClock /> Advertisement Pending
+                      </PendingButton>
+                    )}
+                    
+                    {adStatus === 'approved' && (
+                      <ApprovedButton disabled>
+                        <FaCheckCircle /> Advertisement Active
+                      </ApprovedButton>
+                    )}
+                    
+                    {adStatus === 'rejected' && (
+                      <RejectedButton 
+                        onClick={() => handleAdvertise(
+                          property._id,
+                          property.price,
+                          property.title,
+                          property.image
+                        )}
+                      >
+                        <FaRedo /> Try Again
+                      </RejectedButton>
+                    )}
+                  </PropertyCard>
+                );
+              })}
             </PropertiesGrid>
           )
         )}
