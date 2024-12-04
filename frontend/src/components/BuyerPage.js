@@ -9,8 +9,10 @@ import estateAgent from '../assets/estate-agent.png';
 import house from '../assets/house.png';
 import property from '../assets/property.png';
 import search from '../assets/search.png';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../redux/slices/authSlice';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Styled components
 const PageWrapper = styled.div`
@@ -403,6 +405,13 @@ const NoProperties = styled.div`
   }
 `;
 
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
 const BuyerPage = () => {
   const [activeTab, setActiveTab] = useState('available');
   const [properties, setProperties] = useState([]);
@@ -520,16 +529,16 @@ const BuyerPage = () => {
   const handlePurchase = async (propertyId, price, title) => {
     try {
       const token = authService.getToken();
-      const data = {
-        amount: price * 100,
-        currency: 'inr',
-        product: title,
-        propertyId: propertyId
-      };
-
+      
+      // Create the purchase with status 'sold' and get Stripe URL
       const response = await axios.post(
         'http://localhost:5000/api/buyer/purchase',
-        data,
+        {
+          propertyId,
+          price,
+          title,
+          status: 'sold'
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -538,15 +547,37 @@ const BuyerPage = () => {
         }
       );
 
+      console.log('Stripe response:', response.data);
+
       if (response.data && response.data.paymentUrl) {
-        localStorage.setItem('purchaseFlag', response.data.flag);
+        // Update local state
+        setProperties(prevProperties => 
+          prevProperties.map(prop => 
+            prop._id === propertyId ? { ...prop, status: 'sold' } : prop
+          )
+        );
+        
+        // Update property status using the correct API endpoint
+        // await axios.patch(
+        //   `http://localhost:5000/api/property/${propertyId}`,
+        //   { status: 'sold' },
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${token}`,
+        //       'Content-Type': 'application/json',
+        //     },
+        //   }
+        // );
+
+        // Redirect to Stripe checkout
         window.location.href = response.data.paymentUrl;
       } else {
-        throw new Error('No payment URL received');
+        console.error('Invalid Stripe response:', response.data);
+        toast.error('Failed to initiate payment: Invalid response from server');
       }
     } catch (error) {
-      console.error('Purchase payment failed:', error);
-      alert('Failed to initiate payment. Please try again.');
+      console.error('Purchase initiation failed:', error);
+      toast.error(error.response?.data?.message || 'Failed to initiate purchase');
     }
   };
 
@@ -556,9 +587,29 @@ const BuyerPage = () => {
     } else if (activeTab === 'purchased') {
       fetchPurchasedProperties();
     } else {
-      applyFilters();
+      const fetchInitialProperties = async () => {
+        setLoading(true);
+        try {
+          const token = authService.getToken();
+          const response = await axios.get(
+            'http://localhost:5000/api/buyer/properties',
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          setProperties(response.data);
+        } catch (error) {
+          console.error('Error fetching properties:', error);
+          toast.error('Failed to fetch properties');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchInitialProperties();
     }
-  }, [activeTab, applyFilters, fetchFavorites, fetchPurchasedProperties]);
+  }, [activeTab, fetchFavorites, fetchPurchasedProperties]);
 
   const renderProperties = () => {
     const propertiesToShow = activeTab === 'favorites' 
@@ -570,7 +621,7 @@ const BuyerPage = () => {
     if (propertiesToShow.length === 0) {
       return (
         <NoProperties>
-          Oops, not there still working...
+          No properties found
         </NoProperties>
       );
     }
@@ -639,10 +690,15 @@ const BuyerPage = () => {
                 <span><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</span>
               </PropertyInfo>
               
-              {property.status === 'available' && (
-                <BuyButton onClick={() => handlePurchase(property._id, property.price, property.title)}>
-                  <FaShoppingCart style={{ marginRight: '8px' }} /> 
-                  Buy Property
+              {property.status === 'available' && activeTab !== 'purchased' && (
+                <BuyButton 
+                  onClick={() => handlePurchase(
+                    property._id,
+                    property.price,
+                    property.title
+                  )}
+                >
+                  <FaShoppingCart /> Buy Property
                 </BuyButton>
               )}
             </PropertyDetails>
@@ -659,6 +715,30 @@ const BuyerPage = () => {
   };
 
   const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata'];
+
+  const clearFilters = () => {
+    // Reset all filters to their initial state
+    setFilters({
+      minPrice: '',
+      maxPrice: '',
+      location: '',
+      propertyType: '',
+      minBedrooms: '',
+      minBathrooms: '',
+      minArea: '',
+      maxArea: '',
+      amenities: []
+    });
+
+    // Reset the form
+    const filterForm = document.querySelector('form');
+    if (filterForm) {
+      filterForm.reset();
+    }
+
+    // Fetch all properties without filters
+    applyFilters({});
+  };
 
   return (
     <PageWrapper>
@@ -767,10 +847,16 @@ const BuyerPage = () => {
                   defaultValue={filters.maxArea}
                 />
               </FilterGrid>
-              <ApplyFiltersButton type="submit">
-                <FaSearch /> Apply Filters
-              </ApplyFiltersButton>
+              <ButtonGroup>
+                <TabButton type="button" onClick={clearFilters}>Clear Filters</TabButton>
+                <TabButton type="submit" active>Apply Filters</TabButton>
+              </ButtonGroup>
             </form>
+            {loading && (
+              <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                Loading properties...
+              </div>
+            )}
           </FilterSection>
         )}
         {loading ? (

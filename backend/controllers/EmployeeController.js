@@ -98,59 +98,59 @@ export const getAdvertisementRequests = async (req, res) => {
 export const updateAdvertisementRequest = async (req, res) => {
     try {
         const { requestId, status } = req.body;
+        console.log('Received request:', { requestId, status }); // Debug log
 
-        const request = await AdvertisementRequest.findById(requestId)
-            .populate('property', 'title image')
-            .populate('seller', 'email');
+        if (!requestId || !status) {
+            return res.status(400).json({ message: 'Request ID and status are required' });
+        }
+
+        // Find the advertisement request
+        const advertisementRequest = await AdvertisementRequest.findById(requestId);
         
-        if (!request) {
+        if (!advertisementRequest) {
             return res.status(404).json({ message: 'Advertisement request not found' });
         }
 
-        request.status = status;
-        await request.save();
+        // Update status
+        advertisementRequest.status = status;
+        await advertisementRequest.save();
 
+        // If approved, create new advertisement
         if (status === 'approved') {
-            const property = request.property;
-            if (!property || !property.title || !property.image) {
-                return res.status(400).json({ message: 'Property details are incomplete' });
+            try {
+                const property = await Property.findById(advertisementRequest.property);
+                
+                if (!property) {
+                    return res.status(404).json({ message: 'Property not found' });
+                }
+
+                const newAdvertisement = new Advertisement({
+                    employee: req.user.id,
+                    property: property._id,
+                    title: property.title || 'Property Advertisement',
+                    content: advertisementRequest.description || property.description
+                });
+
+                await newAdvertisement.save();
+                console.log('New advertisement created:', newAdvertisement);
+            } catch (error) {
+                console.error('Error creating advertisement:', error);
+                return res.status(500).json({ message: 'Failed to create advertisement' });
             }
-
-            await Property.findByIdAndUpdate(
-                property._id,
-                { 
-                    isAdvertised: true,
-                    advertisementDate: new Date()
-                }
-            );
-
-            // Create a new advertisement
-            await Advertisement.create({
-                employee: req.user.id,
-                title: property.title,
-                content: property.image,
-                propertyId: property._id,
-                sellerId: request.seller._id,
-                status: 'active',
-                createdAt: new Date()
-            });
-        } else if (status === 'rejected') {
-            await Property.findByIdAndUpdate(
-                request.property,
-                { 
-                    isAdvertised: false,
-                    advertisementDate: null
-                }
-            );
         }
 
         res.status(200).json({ 
+            success: true,
             message: `Advertisement request ${status} successfully`,
-            request: request
+            advertisementRequest 
         });
+
     } catch (error) {
         console.error('Failed to update advertisement request:', error);
-        res.status(500).json({ message: 'Failed to update advertisement request' });
+        res.status(500).json({ 
+            message: 'Failed to update advertisement request',
+            error: error.message 
+        });
     }
 };
 

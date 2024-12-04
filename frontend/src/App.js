@@ -8,6 +8,7 @@ import SellerPage from './components/SellerPage';
 import EmployeePage from './components/EmployeePage';
 import AdminPage from './components/AdminPage';
 import AdvertisementPage from './components/AdvertisementPage';
+import PurchasedPropertiesPage from './components/PurchasedPropertiesPage';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from './redux/slices/authSlice';
 
@@ -29,7 +30,6 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/advertise" element={<AdvertisementPage />} />
-
 
         <Route
           path="/buyer"
@@ -60,6 +60,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <AdminPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/purchased-properties"
+          element={
+            <PrivateRoute>
+              <PurchasedPropertiesPage />
             </PrivateRoute>
           }
         />

@@ -669,21 +669,6 @@ const SellerPage = () => {
     }
   }, [view]);
 
-  const updatePropertyStatus = async (propertyId, status) => {
-    try {
-      const token = authService.getToken();
-      await axios.patch('http://localhost:5000/api/seller/property/status',
-        { propertyId, status },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-      fetchMyProperties();
-      toast.success('Property status updated successfully');
-    } catch (error) {
-      console.error('Error updating property status:', error);
-      toast.error('Failed to update property status');
-    }
-  };
-
   const getRequestStatus = (propertyId) => {
     const request = advertisementRequests.find(req => req.property === propertyId);
     return request ? request.status : null;

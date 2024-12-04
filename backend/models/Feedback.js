@@ -1,25 +1,25 @@
 import mongoose from "mongoose";
 
 const feedbackSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+    name: {
+        type: String,
+        required: [true, 'Name is required']
+    },
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
     },
     message: {
         type: String,
-        required: true
+        required: [true, 'Message is required']
     },
-    rating: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 5
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
+}, { 
+    timestamps: true 
 });
 
 const Feedback = mongoose.model('Feedback', feedbackSchema);

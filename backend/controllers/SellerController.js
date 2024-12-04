@@ -105,12 +105,30 @@ export const addProperty = async (req, res) => {
 };
 
 export const deleteProperty = async (req, res) => {
-    const { id } = req.body;
     try {
-        await Property.findByIdAndDelete(id);
-        res.status(200).json({ success: true, message: 'Property deleted successfully' });
+        const { propertyId } = req.body;
+        const property = await Property.findById(propertyId);
+
+        if (!property) {
+            return res.status(404).json({ message: 'Property not found' });
+        }
+
+        // Check if the property belongs to the seller
+        if (property.seller.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Not authorized to delete this property' });
+        }
+
+        // Prevent deletion if property is sold or pending
+        if (property.status === 'sold' || property.status === 'pending') {
+            return res.status(400).json({ 
+                message: 'Cannot delete sold or pending properties' 
+            });
+        }
+
+        await Property.findByIdAndDelete(propertyId);
+        res.status(200).json({ message: 'Property deleted successfully' });
     } catch (error) {
-        res.status(400).json({ success: false, message: 'Failed to delete property' });
+        res.status(500).json({ message: 'Failed to delete property' });
     }
 };
 
@@ -155,17 +173,28 @@ export const getPropertyDetails = async (req, res) => {
 export const updatePropertyStatus = async (req, res) => {
     try {
         const { propertyId, status } = req.body;
-        const property = await Property.findOneAndUpdate(
-            { _id: propertyId, seller: req.user.id },
-            { status },
-            { new: true }
-        );
+        const property = await Property.findById(propertyId);
 
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
         }
 
-        res.status(200).json(property);
+        // Check if the property belongs to the seller
+        if (property.seller.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Not authorized to update this property' });
+        }
+
+        // Prevent manual status changes if property is sold or pending
+        if (property.status === 'sold' || property.status === 'pending') {
+            return res.status(400).json({ 
+                message: 'Cannot update status of sold or pending properties' 
+            });
+        }
+
+        property.status = status;
+        await property.save();
+
+        res.status(200).json({ message: 'Property status updated successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Failed to update property status' });
     }

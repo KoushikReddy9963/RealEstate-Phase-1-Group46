@@ -188,63 +188,77 @@ const EmployeePage = () => {
 
     const fetchAdvertisementRequests = useCallback(async () => {
         try {
-            const userData = localStorage.getItem('user');
-            if (!userData) {
-                handleLogout();
-                return;
-            }
+            const token = localStorage.getItem('user') 
+                ? JSON.parse(localStorage.getItem('user')).token 
+                : null;
 
-            const { token } = JSON.parse(userData);
             const response = await axios.get(
                 'http://localhost:5000/api/employee/advertisement-requests',
                 {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 }
             );
+
             setAdvertisementRequests(response.data);
         } catch (error) {
-            console.error('Error fetching advertisement requests:', error);
+            console.error('Failed to fetch requests:', error);
             toast.error('Failed to fetch advertisement requests');
         }
-    }, [handleLogout]);
+    }, []);
 
-    const handleStatusUpdate = async (requestId, status) => {
+    const handleUpdateRequest = async (requestId, newStatus) => {
         try {
-            setLoading(true);
-            const userData = localStorage.getItem('user');
-            if (!userData) {
-                toast.error('User session expired. Please login again.');
-                handleLogout();
+            const token = localStorage.getItem('user') 
+                ? JSON.parse(localStorage.getItem('user')).token 
+                : null;
+
+            if (!token) {
+                toast.error('Authentication required');
                 return;
             }
 
-            const { token } = JSON.parse(userData);
-            console.log(token);
-            const updateResponse = await axios.patch(
+            console.log('Sending update request:', { requestId, status: newStatus });
+
+            const response = await axios.patch(
                 'http://localhost:5000/api/employee/advertisement-request/status',
-                { requestId, status },
-                { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }}
+                {
+                    requestId,
+                    status: newStatus
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
 
-            if (updateResponse.data.success) {
-                toast.success(`Advertisement request ${status} successfully`);
-                await fetchAdvertisementRequests();
-                await fetchAdvertisements();
+            if (response.data.success) {
+                setAdvertisementRequests(prevRequests =>
+                    prevRequests.map(request =>
+                        request._id === requestId
+                            ? { ...request, status: newStatus }
+                            : request
+                    )
+                );
+
+                toast.success(`Advertisement request ${newStatus} successfully`);
+                fetchAdvertisementRequests();
             } else {
-                throw new Error('Failed to update request status');
+                throw new Error(response.data.message);
             }
+
         } catch (error) {
-            toast.error(error.response?.data?.message);
-        } finally {
-            setLoading(false);
+            console.error('Update request error:', error);
+            toast.error(error.response?.data?.message || 'Failed to update advertisement request');
         }
     };
 
-    // Update useEffect to include both functions in dependency array
     useEffect(() => {
         fetchAdvertisementRequests();
-        fetchAdvertisements();
-    }, [fetchAdvertisementRequests, fetchAdvertisements]);
+    }, [fetchAdvertisementRequests]);
 
     return (
         <PageContainer>
@@ -466,14 +480,14 @@ const EmployeePage = () => {
                                     <RequestActions>
                                         <RequestActionButton 
                                             className="approve"
-                                            onClick={() => handleStatusUpdate(request._id, 'approved')}
+                                            onClick={() => handleUpdateRequest(request._id, 'approved')}
                                             disabled={loading}
                                         >
                                             Approve
                                         </RequestActionButton>
                                         <RequestActionButton 
                                             className="reject"
-                                            onClick={() => handleStatusUpdate(request._id, 'rejected')}
+                                            onClick={() => handleUpdateRequest(request._id, 'rejected')}
                                             disabled={loading}
                                         >
                                             Reject

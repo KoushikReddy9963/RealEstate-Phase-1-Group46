@@ -1,4 +1,5 @@
 import express from 'express';
+import { verifyJWT, roleCheck } from '../middlewares/auth.js';
 import { 
     getAdvertisements,
     addAdvertisement,
@@ -9,7 +10,6 @@ import {
     deleteAdvertisementRequest,
     getApprovedAdvertisements
 } from '../controllers/EmployeeController.js';
-import { verifyJWT, roleCheck } from '../middlewares/auth.js';
 import upload from '../middlewares/upload.js';
 
 const router = express.Router();

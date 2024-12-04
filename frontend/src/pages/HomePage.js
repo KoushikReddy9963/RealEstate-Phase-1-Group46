@@ -20,33 +20,40 @@ const Homepage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     try {
-      const response = await fetch('http://localhost:5000/api/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+        console.log('Submitting feedback:', formData); // Debug log
+        
+        const response = await fetch('http://localhost:5000/api/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
 
-      if (!response.ok) {
+        console.log('Response status:', response.status); // Debug log
+
         const result = await response.json();
-        throw new Error(result.message || 'Failed to submit feedback');
-      }
+        console.log('Response data:', result); // Debug log
 
-      const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to submit feedback');
+        }
 
-      alert(result.message);
+        alert('Feedback submitted successfully!');
 
-      setFormData({
-        name: '',
-        email: '',
-        message: ''
-      });
+        // Clear form
+        setFormData({
+            name: '',
+            email: '',
+            message: ''
+        });
 
     } catch (error) {
-      alert('Error: ' + error.message);
+        console.error('Submission error:', error); // Debug log
+        alert('Error submitting feedback: ' + error.message);
     }
   };
 

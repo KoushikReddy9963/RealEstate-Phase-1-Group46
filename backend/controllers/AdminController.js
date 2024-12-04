@@ -12,11 +12,9 @@ export const getAdminDashboardData = async (req, res) => {
                 select: 'name email'
             });
         const feedbacks = await Feedback.find()
-            .populate({
-                path: 'user',
-                select: 'name email role'
-            })
-            .sort({ createdAt: -1 });
+            .populate('user', 'name email')
+            .sort({ createdAt: -1 })
+            .limit(5);
 
         const employees = users.filter(u => u.role === 'employee');
 
@@ -100,11 +98,9 @@ export const getDashboardStats = async (req, res) => {
                 select: 'name email'
             });
         const feedbacks = await Feedback.find()
-            .populate({
-                path: 'user',
-                select: 'name email'
-            })
-            .sort({ createdAt: -1 });
+            .populate('user', 'name email')
+            .sort({ createdAt: -1 })
+            .limit(5);
         const employees = users.filter(u => u.role === 'employee');
 
         const stats = {
