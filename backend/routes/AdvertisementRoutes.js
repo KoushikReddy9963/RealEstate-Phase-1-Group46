@@ -1,8 +1,8 @@
 import express from 'express';
-import { getAdvertisement } from '../controllers/Advertisementcontroller.js';
+import { getAdvertisements } from '../controllers/Advertisementcontroller.js';
 
 const router = express.Router();
 
-router.get('/Advertisement', getAdvertisement);
+router.get('/Advertisement', getAdvertisements);
 
 export default router;

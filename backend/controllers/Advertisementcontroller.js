@@ -1,25 +1,31 @@
 import Advertisement from '../models/Advertisement.js';
-import Property from '../models/Property.js';
 
-export const getAdvertisement = async (req, res) => {
+export const getAdvertisements = async (req, res) => {
     try {
-        // Get advertisements and populate with available properties
         const advertisements = await Advertisement.find()
             .populate({
                 path: 'property',
-                match: { status: 'available' }, // Only get available properties
-                select: 'title description price location bedrooms bathrooms area propertyType image status createdAt',
-                populate: {
-                    path: 'seller',
-                    select: 'name email'
-                }
-            });
+                select: 'title description price location propertyType status area bedrooms bathrooms amenities image'
+            })
+            .populate('employee', 'name email')
+            .sort({ createdAt: -1 });
 
-        // Filter out advertisements where property is null (not available)
-        const activeAdvertisements = advertisements.filter(ad => ad.property !== null);
+        console.log('Fetched advertisements:', JSON.stringify(advertisements, null, 2));
         
-        res.status(200).json(activeAdvertisements);
+        const validAdvertisements = advertisements.filter(ad => {
+            if (!ad.property) {
+                console.warn(`Advertisement ${ad._id} has no populated property`);
+                return false;
+            }
+            return true;
+        });
+
+        res.status(200).json(validAdvertisements);
     } catch (error) {
-        res.status(404).json({ message: error.message });
+        console.error('Error in getAdvertisements:', error);
+        res.status(500).json({ 
+            message: "Error fetching advertisements",
+            error: error.message
+        });
     }
 };
