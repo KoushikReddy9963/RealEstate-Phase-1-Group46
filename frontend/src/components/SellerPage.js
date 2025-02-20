@@ -643,7 +643,7 @@ const SellerPage = () => {
     try {
       const token = authService.getToken();
       
-      const adRequestResponse = await axios.post('http://localhost:5000/api/seller/advertise', {
+      const adRequestResponse = await axios.post('https://real-estate-delta-tawny.vercel.app/api/seller/advertise', {
         propertyId,
         amount: 10000,
         currency: 'usd',
@@ -681,7 +681,7 @@ const SellerPage = () => {
 
     try {
       const token = authService.getToken();
-      await axios.post('http://localhost:5000/api/seller/property', submitData, {
+      await axios.post('https://real-estate-delta-tawny.vercel.app/api/seller/property', submitData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -710,7 +710,7 @@ const SellerPage = () => {
     setLoading(true);
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/seller/myProperty', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/seller/myProperty', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMyProperties(response.data);
@@ -724,7 +724,7 @@ const SellerPage = () => {
   const fetchAdvertisementRequests = async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/seller/advertisement-status', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/seller/advertisement-status', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAdvertisementRequests(response.data);

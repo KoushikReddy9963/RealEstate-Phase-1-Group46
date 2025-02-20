@@ -432,7 +432,7 @@ const BuyerPage = () => {
       });
 
       const response = await axios.get(
-        `http://localhost:5000/api/buyer/properties?${queryParams.toString()}`,
+        `https://real-estate-delta-tawny.vercel.app/api/buyer/properties?${queryParams.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -450,7 +450,7 @@ const BuyerPage = () => {
   const fetchFavorites = useCallback(async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/buyer/favorites', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/buyer/favorites', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFavorites(response.data);
@@ -462,7 +462,7 @@ const BuyerPage = () => {
   const fetchPurchasedProperties = useCallback(async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/buyer/purchased', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/buyer/purchased', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPurchasedProperties(response.data);
@@ -477,12 +477,12 @@ const BuyerPage = () => {
       const isFavorite = favorites.some(fav => fav._id === propertyId);
       
       if (isFavorite) {
-        await axios.delete(`http://localhost:5000/api/buyer/favorites/${propertyId}`, {
+        await axios.delete(`https://real-estate-delta-tawny.vercel.app/api/buyer/favorites/${propertyId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFavorites(favorites.filter(fav => fav._id !== propertyId));
       } else {
-        await axios.post('http://localhost:5000/api/buyer/favorites', 
+        await axios.post('https://real-estate-delta-tawny.vercel.app/api/buyer/favorites', 
           { propertyId },
           { headers: { Authorization: `Bearer ${token}` }}
         );
@@ -500,7 +500,7 @@ const BuyerPage = () => {
       
       // Create the purchase with status 'sold' and get Stripe URL
       const response = await axios.post(
-        'http://localhost:5000/api/buyer/purchase',
+        'https://real-estate-delta-tawny.vercel.app/api/buyer/purchase',
         {
           propertyId,
           price,
@@ -527,7 +527,7 @@ const BuyerPage = () => {
         
         // Update property status using the correct API endpoint
         // await axios.patch(
-        //   `http://localhost:5000/api/property/${propertyId}`,
+        //   `https://real-estate-delta-tawny.vercel.app/api/property/${propertyId}`,
         //   { status: 'sold' },
         //   {
         //     headers: {
@@ -560,7 +560,7 @@ const BuyerPage = () => {
         try {
           const token = authService.getToken();
           const response = await axios.get(
-            'http://localhost:5000/api/buyer/properties',
+            'https://real-estate-delta-tawny.vercel.app/api/buyer/properties',
             {
               headers: {
                 Authorization: `Bearer ${token}`,

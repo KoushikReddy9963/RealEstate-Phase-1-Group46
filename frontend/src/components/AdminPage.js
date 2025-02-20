@@ -59,7 +59,7 @@ const AdminPage = () => {
   const fetchDashboardData = async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://localhost:5000/api/admin/dashboard-stats', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/admin/dashboard-stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(response.data);
@@ -85,7 +85,7 @@ const AdminPage = () => {
       });
 
       const response = await axios.get(
-        `http://localhost:5000/api/admin/dashboard-stats?${queryParams}`,
+        `https://real-estate-delta-tawny.vercel.app/api/admin/dashboard-stats?${queryParams}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
