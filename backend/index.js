@@ -39,7 +39,7 @@ import buyerRoutes from './routes/buyerRoutes.js';
 import sellerRoutes from './routes/sellerRoutes.js';
 import employeeRoutes from './routes/employeeRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
-import advertisementRoutes from './routes/advertisementRoutes.js';
+import advertisementRoutes from './routes/AdvertisementRoutes.js';
 import feedbackroutes from './routes/feedbackroutes.js';
 
 // Use routes
