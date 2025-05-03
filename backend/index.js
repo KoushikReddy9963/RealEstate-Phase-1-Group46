@@ -14,15 +14,9 @@ import { swaggerUiServe, swaggerUiSetup } from './swagger.js';
 
 dotenv.config();
 
-console.log(process.env.MONGO_URI);  // Should print your MongoDB URI
-console.log(process.env.REDIS_URL);  // Should print your Redis URL
-
 const app = express();
 
-app.use(cors({
-    origin: 'http://localhost:3000', // Frontend URL
-    credentials: true
-  }));
+app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/api-docs', swaggerUiServe, swaggerUiSetup);
