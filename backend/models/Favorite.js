@@ -17,7 +17,6 @@ const favoriteSchema = new mongoose.Schema({
     }
 });
 
-// Compound index to ensure a user can't favorite the same property twice
 favoriteSchema.index({ userId: 1, propertyId: 1 }, { unique: true });
 
 const Favorite = mongoose.model('Favorite', favoriteSchema);
