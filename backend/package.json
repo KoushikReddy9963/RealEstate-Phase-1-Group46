@@ -4,7 +4,7 @@
     "type": "module",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config=jest.config.js",
         "start": "node ./src/Controller/index.js",
         "dev": "nodemon ./src/Controller/index.js"
     },
@@ -25,13 +25,15 @@
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.2.0",
         "multer": "^1.4.5-lts.1",
-        "stripe": "^17.3.1"
+        "stripe": "^17.3.1",
+        "supertest": "^7.1.0"
     },
     "devDependencies": {
         "@babel/cli": "^7.23.9",
         "@babel/core": "^7.23.9",
         "@babel/plugin-proposal-optional-chaining": "^7.21.0",
         "@babel/preset-env": "^7.23.9",
+        "jest": "^29.7.0",
         "nodemon": "^3.1.0"
     },
     "keywords": [],
