@@ -9,12 +9,12 @@ import EmployeePage from './components/EmployeePage';
 import AdminPage from './components/AdminPage';
 import AdvertisementPage from './components/AdvertisementPage';
 import PurchasedPropertiesPage from './components/PurchasedPropertiesPage';
-import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from './redux/slices/authSlice';
+import authService from './services/AuthService';
 
 const PrivateRoute = ({ children }) => {
-  const isAuthenticated = useSelector(selectIsAuthenticated);
   const location = useLocation();
+  const isAuthenticated = authService.isAuthenticated(); 
+  console.log(isAuthenticated);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
