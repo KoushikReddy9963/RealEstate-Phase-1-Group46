@@ -5,8 +5,8 @@
     "main": "index.js",
     "scripts": {
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config=jest.config.js",
-        "start": "node ./src/Controller/index.js",
-        "dev": "nodemon ./src/Controller/index.js"
+        "start": "node ./index.js",
+        "dev": "nodemon ./index.js"
     },
     "author": "Koushik",
     "license": "ISC",
