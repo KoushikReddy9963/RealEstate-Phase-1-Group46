@@ -3,7 +3,7 @@ import axios from 'axios';
 import authService from '../services/AuthService';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { FaHome, FaMapMarkerAlt, FaBed, FaBath, FaRulerCombined, FaBuilding, FaQuoteLeft, FaQuoteRight, FaMagic, FaCheckCircle, FaClock, FaBullhorn, FaRedo } from 'react-icons/fa';
+import { FaHome, FaMapMarkerAlt, FaBed, FaBath, FaRulerCombined, FaBuilding, FaQuoteLeft, FaQuoteRight, FaMagic, FaCheckCircle, FaClock, FaBullhorn, FaRedo, FaTrash } from 'react-icons/fa';
 import { BiDollar } from 'react-icons/bi';
 import { MdAddAPhoto } from 'react-icons/md';
 import { GiDreamCatcher } from 'react-icons/gi';
@@ -17,6 +17,7 @@ import { Pie, Bar } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
+// Styled components remain unchanged; they are included here for completeness
 const AppContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -484,6 +485,21 @@ const RejectedButton = styled(AdvertiseButton)`
   }
 `;
 
+const DeleteButton = styled.button`
+  padding: 8px 16px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #c82333;
+  }
+`;
+
 export const logoutSound = () => {
   const audio = new Audio('/sounds/logout.mp3');
   audio.play().catch(e => console.log('Audio play failed:', e));
@@ -671,7 +687,6 @@ const SellerPage = () => {
     e.preventDefault();
     const submitData = new FormData();
     
-    // Append all form data
     Object.entries(formData).forEach(([key, value]) => {
       submitData.append(key, value);
     });
@@ -688,7 +703,6 @@ const SellerPage = () => {
         },
       });
       setMessage('Property added successfully!');
-      // Reset form
       setFormData({
         title: '',
         description: '',
@@ -731,6 +745,31 @@ const SellerPage = () => {
     } catch (error) {
       console.error('Failed to fetch advertisement requests:', error);
       toast.error('Failed to load advertisement status');
+    }
+  };
+
+  const handleDelete = async (propertyId) => {
+    if (window.confirm('Are you sure you want to delete this property?')) {
+      try {
+        const token = authService.getToken();
+        await axios.post('https://real-estate-delta-tawny.vercel.app/api/seller/delete-property', 
+          { propertyId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        toast.success('Property deleted successfully');
+        setMyProperties(prevProperties => prevProperties.filter(p => p._id !== propertyId));
+      } catch (error) {
+        if (error.response && error.response.data && error.response.data.message) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error('Failed to delete property');
+        }
+      }
     }
   };
 
@@ -943,7 +982,7 @@ const SellerPage = () => {
                         )}
                       </PropertyDetails>
 
-                      {!adStatus && (
+                      {property.status === 'available' && !adStatus && (
                         <AdvertiseButton 
                           onClick={() => handleAdvertise(
                             property._id,
@@ -954,6 +993,19 @@ const SellerPage = () => {
                         >
                           <FaBullhorn /> Advertise Property
                         </AdvertiseButton>
+                      )}
+                      
+                      {property.status === 'available' && adStatus === 'rejected' && (
+                        <RejectedButton 
+                          onClick={() => handleAdvertise(
+                            property._id,
+                            property.price,
+                            property.title,
+                            property.image
+                          )}
+                        >
+                          <FaRedo /> Try Again
+                        </RejectedButton>
                       )}
                       
                       {adStatus === 'pending' && (
@@ -967,18 +1019,11 @@ const SellerPage = () => {
                           <FaCheckCircle /> Advertisement Active
                         </ApprovedButton>
                       )}
-                      
-                      {adStatus === 'rejected' && (
-                        <RejectedButton 
-                          onClick={() => handleAdvertise(
-                            property._id,
-                            property.price,
-                            property.title,
-                            property.image
-                          )}
-                        >
-                          <FaRedo /> Try Again
-                        </RejectedButton>
+
+                      {property.status !== 'sold' && property.status !== 'pending' && (
+                        <DeleteButton onClick={() => handleDelete(property._id)}>
+                          <FaTrash /> Delete
+                        </DeleteButton>
                       )}
                     </PropertyCard>
                   );
@@ -994,7 +1039,6 @@ const SellerPage = () => {
 };
 
 export default SellerPage;
-
 
 const keyframes = `
   @keyframes slideUp {

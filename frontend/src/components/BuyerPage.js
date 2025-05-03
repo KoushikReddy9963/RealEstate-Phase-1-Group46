@@ -14,7 +14,6 @@ import { logoutUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Styled components
 const PageWrapper = styled.div`
   background-color: ${colors.background};
   min-height: 100vh;
@@ -408,7 +407,7 @@ const BuyerPage = () => {
       const formData = new FormData(e.target);
       const newFilters = {};
       formData.forEach((value, key) => {
-        if (value) { // Only add non-empty values
+        if (value) { 
           newFilters[key] = value;
         }
       });
@@ -497,8 +496,6 @@ const BuyerPage = () => {
   const handlePurchase = async (propertyId, price, title) => {
     try {
       const token = authService.getToken();
-      
-      // Create the purchase with status 'sold' and get Stripe URL
       const response = await axios.post(
         'https://real-estate-delta-tawny.vercel.app/api/buyer/purchase',
         {
@@ -518,26 +515,12 @@ const BuyerPage = () => {
       console.log('Stripe response:', response.data);
 
       if (response.data && response.data.paymentUrl) {
-        // Update local state
         setProperties(prevProperties => 
           prevProperties.map(prop => 
             prop._id === propertyId ? { ...prop, status: 'sold' } : prop
           )
         );
         
-        // Update property status using the correct API endpoint
-        // await axios.patch(
-        //   `https://real-estate-delta-tawny.vercel.app/api/property/${propertyId}`,
-        //   { status: 'sold' },
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${token}`,
-        //       'Content-Type': 'application/json',
-        //     },
-        //   }
-        // );
-
-        // Redirect to Stripe checkout
         window.location.href = response.data.paymentUrl;
       } else {
         console.error('Invalid Stripe response:', response.data);
@@ -685,7 +668,6 @@ const BuyerPage = () => {
   const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata'];
 
   const clearFilters = () => {
-    // Reset all filters to their initial state
     setFilters({
       minPrice: '',
       maxPrice: '',
@@ -698,13 +680,10 @@ const BuyerPage = () => {
       amenities: []
     });
 
-    // Reset the form
     const filterForm = document.querySelector('form');
     if (filterForm) {
       filterForm.reset();
     }
-
-    // Fetch all properties without filters
     applyFilters({});
   };
 
@@ -844,7 +823,6 @@ const BuyerPage = () => {
 
 export default BuyerPage;
 
-// Inline CSS styles
 const styles = {
   page: {
     backgroundColor: colors.background,

@@ -140,7 +140,7 @@ const AdvertisementPage = () => {
         const fetchAdvertisements = async () => {
             try {
                 const response = await axios.get("https://real-estate-delta-tawny.vercel.app/api/adv/Advertisement");
-                console.log("Advertisement data:", response.data); // Debug log
+                console.log("Advertisement data:", response.data);
                 setAdvertisements(response.data);
             } catch (error) {
                 console.error("Error fetching advertisements:", error);
@@ -150,7 +150,6 @@ const AdvertisementPage = () => {
         fetchAdvertisements();
     }, []);
 
-    // Debug log to check image paths
     useEffect(() => {
         console.log("Current advertisements:", advertisements);
     }, [advertisements]);
@@ -164,7 +163,6 @@ const AdvertisementPage = () => {
 
             <AdvertisementsGrid>
                 {advertisements.map(ad => {
-                    // Debug log for each advertisement
                     console.log("Processing ad:", ad);
                     console.log("Image path:", ad.property?.image);
 

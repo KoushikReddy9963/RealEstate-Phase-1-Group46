@@ -109,7 +109,6 @@ const EmployeePage = () => {
             }
 
             if (editingId) {
-                // Update existing advertisement
                 await axios.put(`https://real-estate-delta-tawny.vercel.app/api/employee/advertisement/${editingId}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -118,7 +117,6 @@ const EmployeePage = () => {
                 });
                 toast.success('Advertisement updated successfully!');
             } else {
-                // Create new advertisement
                 await axios.post('https://real-estate-delta-tawny.vercel.app/api/employee/advertisement', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -128,7 +126,6 @@ const EmployeePage = () => {
                 toast.success('Advertisement created successfully!');
             }
 
-            // Reset form
             setTitle('');
             setImage(null);
             setPreview(null);
@@ -152,7 +149,7 @@ const EmployeePage = () => {
             if (adToEdit) {
                 setTitle(adToEdit.title);
                 setPreview(`data:image/jpeg;base64,${adToEdit.content}`);
-                setImage(null); // Reset image since we don't need to upload unless changed
+                setImage(null); 
                 setEditingId(id);
                 setActiveTab('upload');
             }
@@ -508,7 +505,6 @@ const EmployeePage = () => {
     );
 };
 
-// Enhanced Styled Components
 const PageContainer = styled.div`
     display: flex;
     min-height: 100vh;

@@ -82,7 +82,6 @@ const SignupPage = () => {
                         >
                             <option value="buyer">Buyer</option>
                             <option value="seller">Seller</option>
-                            <option value="employee">Employee</option>
                         </select>
                     </div>
 

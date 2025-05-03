@@ -24,20 +24,13 @@ const LoginPage = () => {
             });
 
             if (response.data && response.data.user) {
-                // Store user data in localStorage
                 localStorage.setItem('user', JSON.stringify(response.data));
-                
-                // Dispatch to Redux
                 await dispatch(loginUser(response.data));
-                
-                // Play sound effect
                 playLoginSound();
-                
-                // Get role and navigate
-                const role = response.data.user.role.toLowerCase(); // Ensure lowercase
-                console.log('Navigating to role:', role); // Debug log
-                
-                // Navigate based on role
+
+                const role = response.data.user.role.toLowerCase(); 
+                console.log('Navigating to role:', role); 
+
                 switch(role) {
                     case 'buyer':
                         navigate('/buyer');
@@ -60,7 +53,7 @@ const LoginPage = () => {
                 console.error('Invalid response:', response.data);
             }
         } catch (err) {
-            console.error('Login error:', err); // Debug log
+            console.error('Login error:', err);
             if (err.response) {
                 setError(err.response.data.message || 'Invalid email or password');
             } else if (err.request) {
