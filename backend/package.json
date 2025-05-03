@@ -8,6 +8,9 @@
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config=jest.config.js",
 =======
         "test": "echo \"Error: no test specified\" && exit 1",
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         "start": "node ./index.js",
         "dev": "nodemon ./index.js"
@@ -30,13 +33,19 @@
         "mongoose": "^8.2.0",
         "multer": "^1.4.5-lts.1",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         "stripe": "^17.3.1",
         "supertest": "^7.1.0"
 =======
+=======
+>>>>>>> Stashed changes
         "redis": "^5.0.0",
         "stripe": "^17.3.1",
         "swagger-jsdoc": "^6.2.8",
         "swagger-ui-express": "^5.0.1"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     },
     "devDependencies": {
