@@ -1,5 +1,4 @@
 import Property from '../models/Property.js';
-import Purchase from '../models/Purchase.js';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -12,53 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
-// Define the frontend URL explicitly
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-
-export const purchaseProperty = async (req, res) => {
-    try {
-        const { amount, currency, product, propertyId } = req.body;
-        const userId = req.user.id;
-
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-                price_data: {
-                    currency: currency,
-                    product_data: {
-                        name: product,
-                    },
-                    unit_amount: amount,
-                },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: `${FRONTEND_URL}/payment-success`,
-            cancel_url: `${FRONTEND_URL}/payment-cancel`,
-            metadata: {
-                propertyId: propertyId.toString(),
-                buyerId: userId.toString()
-            }
-        });
-
-        const purchase = new Purchase({
-            property: propertyId,
-            buyer: userId,
-            amount: amount / 100,
-            status: 'pending',
-            stripeSessionId: session.id
-        });
-        await purchase.save();
-
-        res.json({
-            paymentUrl: session.url,
-            flag: session.id
-        });
-    } catch (error) {
-        console.error('Purchase initiation failed:', error);
-        res.status(500).json({ message: 'Failed to initiate purchase' });
-    }
-};
 
 export const addProperty = async (req, res) => {
     const { 
@@ -73,6 +26,7 @@ export const addProperty = async (req, res) => {
         amenities 
     } = req.body;
     const { file } = req;
+    console.log(file);
 
     try {
         if (!file) {
@@ -113,12 +67,10 @@ export const deleteProperty = async (req, res) => {
             return res.status(404).json({ message: 'Property not found' });
         }
 
-        // Check if the property belongs to the seller
         if (property.seller.toString() !== req.user.id) {
             return res.status(403).json({ message: 'Not authorized to delete this property' });
         }
 
-        // Prevent deletion if property is sold or pending
         if (property.status === 'sold' || property.status === 'pending') {
             return res.status(400).json({ 
                 message: 'Cannot delete sold or pending properties' 
@@ -141,101 +93,10 @@ export const myProperties = async (req, res) => {
     }
 };
 
-export const getMyProperties = async (req, res) => {
-    try {
-        // Get all properties for the seller
-        const properties = await Property.find({ seller: req.user.id })
-            .select('title location price propertyType status createdAt image');
-
-        // Calculate statistics
-        const stats = {
-            total: properties.length,
-            advertised: await AdvertisementRequest.countDocuments({
-                seller: req.user.id,
-                status: 'approved'
-            }),
-            status: {
-                available: properties.filter(p => p.status === 'available').length,
-                sold: properties.filter(p => p.status === 'sold').length,
-                pending: properties.filter(p => p.status === 'pending').length
-            },
-            priceRanges: {
-                under50L: properties.filter(p => p.price < 5000000).length,
-                under1Cr: properties.filter(p => p.price >= 5000000 && p.price < 10000000).length,
-                above1Cr: properties.filter(p => p.price >= 10000000).length
-            },
-            propertyTypes: properties.reduce((acc, prop) => {
-                acc[prop.propertyType] = (acc[prop.propertyType] || 0) + 1;
-                return acc;
-            }, {})
-        };
-
-        // Calculate unadvertised count
-        stats.unadvertised = stats.total - stats.advertised;
-
-        res.status(200).json({
-            properties: properties.sort((a, b) => b.createdAt - a.createdAt),
-            statistics: stats
-        });
-    } catch (error) {
-        console.error('Error fetching properties:', error);
-        res.status(500).json({ message: 'Failed to fetch properties' });
-    }
-};
-
-export const getPropertyDetails = async (req, res) => {
-    try {
-        const property = await Property.findOne({
-            _id: req.params.propertyId,
-            seller: req.user.id
-        });
-
-        if (!property) {
-            return res.status(404).json({ message: 'Property not found' });
-        }
-
-        res.status(200).json(property);
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to fetch property details' });
-    }
-};
-
-export const updatePropertyStatus = async (req, res) => {
-    try {
-        const { propertyId, status } = req.body;
-        const property = await Property.findById(propertyId);
-
-        if (!property) {
-            return res.status(404).json({ message: 'Property not found' });
-        }
-
-        // Check if the property belongs to the seller
-        if (property.seller.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Not authorized to update this property' });
-        }
-
-        // Prevent manual status changes if property is sold or pending
-        if (property.status === 'sold' || property.status === 'pending') {
-            return res.status(400).json({ 
-                message: 'Cannot update status of sold or pending properties' 
-            });
-        }
-
-        property.status = status;
-        await property.save();
-
-        res.status(200).json({ message: 'Property status updated successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to update property status' });
-    }
-};
-
 export const advertiseProperty = async (req, res) => {
     try {
         const { amount, currency, title, image, propertyId } = req.body;
         const userId = req.user.id;
-
-        // First, verify the property exists and get its details
         const property = await Property.findOne({ _id: propertyId, seller: userId });
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
@@ -263,15 +124,14 @@ export const advertiseProperty = async (req, res) => {
             }
         });
 
-        // Create a new advertisement request with all required fields
         const advertisementRequest = new AdvertisementRequest({
             property: propertyId,
             seller: userId,
             amount: amount / 100,
             status: 'pending',
             stripeSessionId: session.id,
-            title: property.title,        // Use property title
-            image: property.image,        // Use property image
+            title: property.title,
+            image: property.image,
             description: property.description || 'Property Advertisement'
         });
 

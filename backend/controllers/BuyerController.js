@@ -14,13 +14,11 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
-// Add this after your existing exports
 export const purchaseProperty = async (req, res) => {
     try {
         const { propertyId, price, title } = req.body;
         const userId = req.user.id;
 
-        // Check if property exists and is available
         const property = await Property.findById(propertyId);
         if (!property) {
             return res.status(404).json({ message: 'Property not found' });
@@ -29,7 +27,6 @@ export const purchaseProperty = async (req, res) => {
             return res.status(400).json({ message: 'Property is not available for purchase' });
         }
 
-        // Create Stripe session
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
@@ -38,7 +35,7 @@ export const purchaseProperty = async (req, res) => {
                     product_data: {
                         name: title,
                     },
-                    unit_amount: price * 100, // Convert to smallest currency unit
+                    unit_amount: price * 100,
                 },
                 quantity: 1,
             }],
@@ -51,7 +48,6 @@ export const purchaseProperty = async (req, res) => {
             }
         });
 
-        // Create purchase record with completed status
         const purchase = new Purchase({
             property: propertyId,
             buyer: userId,
@@ -63,7 +59,6 @@ export const purchaseProperty = async (req, res) => {
         });
         await purchase.save();
 
-        // Update property status to sold
         property.status = 'sold';
         await property.save();
 
@@ -90,7 +85,6 @@ export const viewProperties = async (req, res) => {
             maxArea
         } = req.query;
 
-        // Build filter object
         let filter = { status: 'available' };
 
         if (minPrice) filter.price = { ...filter.price, $gte: Number(minPrice) };
@@ -219,19 +213,16 @@ export const handleStripeWebhook = async (req, res) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // Handle successful payment
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         
         try {
-            // Update purchase record
             const purchase = await Purchase.findOne({ stripeSessionId: session.id });
             if (purchase) {
                 purchase.status = 'completed';
                 purchase.transactionId = session.payment_intent;
                 await purchase.save();
 
-                // Update property status
                 const property = await Property.findById(purchase.property);
                 if (property) {
                     property.status = 'sold';

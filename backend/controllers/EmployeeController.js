@@ -25,7 +25,6 @@ export const addAdvertisement = async (req, res) => {
     }
 };
 
-// Add edit advertisement controller
 export const editAdvertisement = async (req, res) => {
     const { id } = req.params;
     const { title } = req.body;
@@ -38,10 +37,8 @@ export const editAdvertisement = async (req, res) => {
             return res.status(404).json({ message: 'Advertisement not found' });
         }
 
-        // Update the title
         advertisement.title = title;
 
-        // Update the image only if a new file is uploaded
         if (file) {
             const imageBase64 = file.buffer.toString('base64');
             advertisement.content = imageBase64;
@@ -56,7 +53,7 @@ export const editAdvertisement = async (req, res) => {
 };
 
 export const deleteAdvertisement = async (req, res) => {
-    const { id } = req.params;  // Changed from req.body to req.params
+    const { id } = req.params; 
     try {
         const deletedAd = await Advertisement.findByIdAndDelete(id);
         if (!deletedAd) {
@@ -69,7 +66,6 @@ export const deleteAdvertisement = async (req, res) => {
     }    
 };
 
-// Add get all advertisements controller
 export const getAdvertisements = async (req, res) => {
     try {
         const advertisements = await Advertisement.find({ employee: req.user.id })
@@ -83,11 +79,10 @@ export const getAdvertisements = async (req, res) => {
             })
             .sort({ createdAt: -1 });
 
-        // Map the response to include property image as content if available
         const formattedAds = advertisements.map(ad => ({
             _id: ad._id,
             title: ad.title,
-            content: ad.property?.image || ad.content, // Use property image if available
+            content: ad.property?.image || ad.content, 
             createdAt: ad.createdAt,
             property: ad.property
         }));
@@ -99,7 +94,6 @@ export const getAdvertisements = async (req, res) => {
     }
 };
 
-// Add new method to get advertisement requests
 export const getAdvertisementRequests = async (req, res) => {
     try {
         const requests = await AdvertisementRequest.find()
@@ -114,28 +108,24 @@ export const getAdvertisementRequests = async (req, res) => {
     }
 };
 
-// Update advertisement request status
 export const updateAdvertisementRequest = async (req, res) => {
     try {
         const { requestId, status } = req.body;
-        console.log('Received request:', { requestId, status }); // Debug log
+        console.log('Received request:', { requestId, status }); 
 
         if (!requestId || !status) {
             return res.status(400).json({ message: 'Request ID and status are required' });
         }
 
-        // Find the advertisement request
         const advertisementRequest = await AdvertisementRequest.findById(requestId);
         
         if (!advertisementRequest) {
             return res.status(404).json({ message: 'Advertisement request not found' });
         }
 
-        // Update status
         advertisementRequest.status = status;
         await advertisementRequest.save();
 
-        // If approved, create new advertisement
         if (status === 'approved') {
             try {
                 const property = await Property.findById(advertisementRequest.property);
@@ -174,14 +164,13 @@ export const updateAdvertisementRequest = async (req, res) => {
     }
 };
 
-// Get all approved advertisements
 export const getApprovedAdvertisements = async (req, res) => {
     try {
         const approvedAds = await AdvertisementRequest.find({ status: 'approved', employee: req.user.id })
             .populate({
                 path: 'property',
                 select: 'title description price location bedrooms bathrooms area propertyType image status createdAt',
-                match: { status: 'available' }, // Only get available properties
+                match: { status: 'available' }, 
                 populate: {
                     path: 'seller',
                     select: 'name email'
@@ -189,7 +178,6 @@ export const getApprovedAdvertisements = async (req, res) => {
             })
             .sort({ advertisementDate: -1 });
 
-        // Filter out advertisements where property is null (not available)
         const activeApprovedAds = approvedAds.filter(ad => ad.property !== null);
 
         res.status(200).json(activeApprovedAds);
@@ -199,7 +187,6 @@ export const getApprovedAdvertisements = async (req, res) => {
     }
 };
 
-// Delete advertisement request
 export const deleteAdvertisementRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
@@ -209,7 +196,6 @@ export const deleteAdvertisementRequest = async (req, res) => {
             return res.status(404).json({ message: 'Advertisement request not found' });
         }
 
-        // Update the property's advertisement status
         await Property.findByIdAndUpdate(
             request.property,
             { 
@@ -218,7 +204,6 @@ export const deleteAdvertisementRequest = async (req, res) => {
             }
         );
 
-        // Delete the request
         await AdvertisementRequest.findByIdAndDelete(requestId);
 
         res.status(200).json({ message: 'Advertisement request deleted successfully' });
