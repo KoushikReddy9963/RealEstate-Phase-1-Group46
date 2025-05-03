@@ -1,0 +1,15 @@
+openapi: 3.0.0
+info:
+  title: EstateCraft API
+  version: 1.0.0
+  description: API documentation for EstateCraft Real Estate Management Platform
+servers:
+  - url: https://real-estate-delta-tawny.vercel.app/api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
