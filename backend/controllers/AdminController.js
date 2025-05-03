@@ -158,7 +158,7 @@ export const getDashboardStats = async (req, res) => {
         console.log(`MongoDB query for dashboard-stats took ${duration}ms`);
         if (req.cacheKey) {
             try {
-                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(stats));
+                await redisClient.set(req.cacheKey, JSON.stringify(stats));
                 console.log(`Cached response for ${req.cacheKey}`);
             } catch (err) {
                 console.error(`Failed to cache ${req.cacheKey}:`, err.message);
