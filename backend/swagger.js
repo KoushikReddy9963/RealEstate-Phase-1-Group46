@@ -11,13 +11,13 @@ const options = {
     },
     servers: [
       {
-        url: 'https://real-estate-delta-tawny.vercel.app/api',
+        url: "https://real-estate-delta-tawny.vercel.app/api",
       },
     ],
     components: {
       securitySchemes: {
         bearerAuth: {
-          type: 'https',
+          type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
         },
