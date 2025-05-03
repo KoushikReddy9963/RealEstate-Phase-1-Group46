@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:5000/api',
+        url: 'http://real-estate-delta-tawny.vercel.app/api',
       },
     ],
     components: {
