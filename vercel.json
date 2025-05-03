@@ -1,8 +1,6 @@
 {
     "version": 2,
     "builds": [{ "src": "package.json", "use": "@vercel/static-build" }],
-    "routes": [
-        { "src": "/api-docs/(.*)", "dest": "/api-docs/$1" },
-        { "src": "/(.*)", "dest": "/index.html" }
-    ]
+    "routes": [{ "src": "/(.*)", "dest": "/index.html" }]
 }
+  
