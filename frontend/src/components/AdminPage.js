@@ -80,7 +80,7 @@ const AdminPage = () => {
   const fetchDashboardData = async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://real-estate-delta-tawny.vercel.app/api/admin/dashboard-stats', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/admin/dashboard-stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(response.data);
@@ -106,7 +106,7 @@ const AdminPage = () => {
       });
 
       const response = await axios.get(
-        `http://real-estate-delta-tawny.vercel.app/api/admin/dashboard-stats?${queryParams}`,
+        `https://real-estate-delta-tawny.vercel.app/api/admin/dashboard-stats?${queryParams}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -136,7 +136,7 @@ const AdminPage = () => {
   const handleDeleteUser = async (id) => {
     try {
       const token = authService.getToken();
-      await axios.delete(`http://real-estate-delta-tawny.vercel.app/api/admin/users/${id}`, {
+      await axios.delete(`https://real-estate-delta-tawny.vercel.app/api/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchDashboardData();
@@ -150,7 +150,7 @@ const AdminPage = () => {
     try {
       const token = authService.getToken();
       const response = await axios.delete(
-        `http://real-estate-delta-tawny.vercel.app/api/admin/properties/${id}`,
+        `https://real-estate-delta-tawny.vercel.app/api/admin/properties/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -169,7 +169,7 @@ const AdminPage = () => {
     try {
       const token = authService.getToken();
       const response = await axios.delete(
-        `http://real-estate-delta-tawny.vercel.app/api/admin/feedback/${id}`,
+        `https://real-estate-delta-tawny.vercel.app/api/admin/feedback/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -198,7 +198,7 @@ const AdminPage = () => {
     try {
       const token = authService.getToken();
       await axios.post(
-        'http://real-estate-delta-tawny.vercel.app/api/admin/add-employee',
+        'https://real-estate-delta-tawny.vercel.app/api/admin/add-employee',
         formValues,
         {
           headers: { Authorization: `Bearer ${token}` }

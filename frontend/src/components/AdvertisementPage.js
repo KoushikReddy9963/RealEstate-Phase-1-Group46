@@ -139,7 +139,7 @@ const AdvertisementPage = () => {
     useEffect(() => {
         const fetchAdvertisements = async () => {
             try {
-                const response = await axios.get("http://real-estate-delta-tawny.vercel.app/api/adv/Advertisement");
+                const response = await axios.get("https://real-estate-delta-tawny.vercel.app/api/adv/Advertisement");
                 console.log("Advertisement data:", response.data);
                 setAdvertisements(response.data);
             } catch (error) {
@@ -172,13 +172,13 @@ const AdvertisementPage = () => {
                                 src={ad.property?.image?.startsWith('/9j') 
                                     ? `data:image/jpeg;base64,${ad.property.image}`
                                     : ad.property?.image 
-                                        ? `http://real-estate-delta-tawny.vercel.app/uploads/${ad.property.image}`
-                                        : 'http://via.placeholder.com/400x300?text=Property+Image'
+                                        ? `https://real-estate-delta-tawny.vercel.app/uploads/${ad.property.image}`
+                                        : 'https://via.placeholder.com/400x300?text=Property+Image'
                                 } 
                                 alt={ad.property?.title || 'Property'} 
                                 onError={(e) => {
                                     console.error("Image load error for:", ad.property?.image);
-                                    e.target.src = 'http://via.placeholder.com/400x300?text=Property+Image';
+                                    e.target.src = 'https://via.placeholder.com/400x300?text=Property+Image';
                                 }}
                             />
                             <h2>{ad.property?.title}</h2>

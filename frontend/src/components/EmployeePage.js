@@ -61,7 +61,7 @@ const EmployeePage = () => {
             }
 
             const user = JSON.parse(userData);
-            const response = await axios.get('http://real-estate-delta-tawny.vercel.app/api/employee/advertisements', {
+            const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/employee/advertisements', {
                 headers: { 
                     'Authorization': `Bearer ${user.token}`
                 }
@@ -109,7 +109,7 @@ const EmployeePage = () => {
             }
 
             if (editingId) {
-                await axios.put(`http://real-estate-delta-tawny.vercel.app/api/employee/advertisement/${editingId}`, formData, {
+                await axios.put(`https://real-estate-delta-tawny.vercel.app/api/employee/advertisement/${editingId}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${user.token}`
@@ -117,7 +117,7 @@ const EmployeePage = () => {
                 });
                 toast.success('Advertisement updated successfully!');
             } else {
-                await axios.post('http://real-estate-delta-tawny.vercel.app/api/employee/advertisement', formData, {
+                await axios.post('https://real-estate-delta-tawny.vercel.app/api/employee/advertisement', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${user.token}`
@@ -165,7 +165,7 @@ const EmployeePage = () => {
                 const userData = localStorage.getItem('user');
                 const user = JSON.parse(userData);
                 
-                await axios.delete(`http://real-estate-delta-tawny.vercel.app/api/employee/advertisement/${id}`, {
+                await axios.delete(`https://real-estate-delta-tawny.vercel.app/api/employee/advertisement/${id}`, {
                     headers: { 
                         'Authorization': `Bearer ${user.token}`
                     }
@@ -190,7 +190,7 @@ const EmployeePage = () => {
                 : null;
 
             const response = await axios.get(
-                'http://real-estate-delta-tawny.vercel.app/api/employee/advertisement-requests',
+                'https://real-estate-delta-tawny.vercel.app/api/employee/advertisement-requests',
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -219,7 +219,7 @@ const EmployeePage = () => {
             console.log('Sending update request:', { requestId, status: newStatus });
 
             const response = await axios.patch(
-                'http://real-estate-delta-tawny.vercel.app/api/employee/advertisement-request/status',
+                'https://real-estate-delta-tawny.vercel.app/api/employee/advertisement-request/status',
                 {
                     requestId,
                     status: newStatus
@@ -336,13 +336,13 @@ const EmployeePage = () => {
                                             src={ad.content?.startsWith('/9j') 
                                                 ? `data:image/jpeg;base64,${ad.content}`
                                                 : ad.content 
-                                                    ? `http://real-estate-delta-tawny.vercel.app/uploads/${ad.content}`
-                                                    : 'http://via.placeholder.com/400x300?text=Advertisement+Image'
+                                                    ? `https://real-estate-delta-tawny.vercel.app/uploads/${ad.content}`
+                                                    : 'https://via.placeholder.com/400x300?text=Advertisement+Image'
                                             } 
                                             alt={ad.title} 
                                             onError={(e) => {
                                                 console.error("Image load error for:", ad.content);
-                                                e.target.src = 'http://via.placeholder.com/400x300?text=Advertisement+Image';
+                                                e.target.src = 'https://via.placeholder.com/400x300?text=Advertisement+Image';
                                             }}
                                         />
                                         <CardContent>

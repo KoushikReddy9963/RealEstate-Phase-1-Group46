@@ -659,7 +659,7 @@ const SellerPage = () => {
     try {
       const token = authService.getToken();
       
-      const adRequestResponse = await axios.post('http://real-estate-delta-tawny.vercel.app/api/seller/advertise', {
+      const adRequestResponse = await axios.post('https://real-estate-delta-tawny.vercel.app/api/seller/advertise', {
         propertyId,
         amount: 10000,
         currency: 'usd',
@@ -696,7 +696,7 @@ const SellerPage = () => {
 
     try {
       const token = authService.getToken();
-      await axios.post('http://real-estate-delta-tawny.vercel.app/api/seller/property', submitData, {
+      await axios.post('https://real-estate-delta-tawny.vercel.app/api/seller/property', submitData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -724,7 +724,7 @@ const SellerPage = () => {
     setLoading(true);
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://real-estate-delta-tawny.vercel.app/api/seller/myProperty', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/seller/myProperty', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMyProperties(response.data);
@@ -738,7 +738,7 @@ const SellerPage = () => {
   const fetchAdvertisementRequests = async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('http://real-estate-delta-tawny.vercel.app/api/seller/advertisement-status', {
+      const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/seller/advertisement-status', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAdvertisementRequests(response.data);
@@ -752,7 +752,7 @@ const SellerPage = () => {
     if (window.confirm('Are you sure you want to delete this property?')) {
       try {
         const token = authService.getToken();
-        await axios.post('http://real-estate-delta-tawny.vercel.app/api/seller/delete-property', 
+        await axios.post('https://real-estate-delta-tawny.vercel.app/api/seller/delete-property', 
           { propertyId },
           {
             headers: {

@@ -24,7 +24,7 @@ const Homepage = () => {
     try {
         console.log('Submitting feedback:', formData); // Debug log
         
-        const response = await fetch('http://real-estate-delta-tawny.vercel.app/api/feedback', {
+        const response = await fetch('https://real-estate-delta-tawny.vercel.app/api/feedback', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ const Homepage = () => {
         <ul className="sidebar" id="sidebar">
           <li onClick={hideSidebar}>
             <a href="#!">
-              <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+              <svg xmlns="https://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
                 <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" />
               </svg>
             </a>
@@ -96,7 +96,7 @@ const Homepage = () => {
           <li className="hideOnMobile">
             <a href="/login" >
               <button className="si">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+                <svg xmlns="https://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
                   <path d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z" />
                 </svg>
                 Login
@@ -105,7 +105,7 @@ const Homepage = () => {
           </li>
           <li className="menu-button" onClick={showSidebar}>
             <a href="#!">
-              <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+              <svg xmlns="https://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
                 <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
               </svg>
             </a>
@@ -186,12 +186,12 @@ const Homepage = () => {
           <div className="box">
             <h3>quick links</h3>
             <a href="#home">
-              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+              <svg xmlns="https://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
                 <path d="m576-288-51-51 105-105H192v-72h438L525-621l51-51 192 192-192 192Z" />
               </svg> home
             </a>
             <a href="#about">
-              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+              <svg xmlns="https://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
                 <path d="m576-288-51-51 105-105H192v-72h438L525-621l51-51 192 192-192 192Z" />
               </svg> about
             </a>
