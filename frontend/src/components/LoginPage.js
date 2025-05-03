@@ -18,7 +18,7 @@ const LoginPage = () => {
         e.preventDefault();
         setError('');
         try {
-            const response = await axios.post('https://real-estate-delta-tawny.vercel.app/api/users/login', { 
+            const response = await axios.post('http://real-estate-delta-tawny.vercel.app/api/users/login', { 
                 email, 
                 password 
             });

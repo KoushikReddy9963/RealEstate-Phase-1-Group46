@@ -11,7 +11,7 @@ const PurchasedPropertiesPage = () => {
     useEffect(() => {
         const fetchPurchasedProperties = async () => {
             try {
-                const response = await axios.get('https://real-estate-delta-tawny.vercel.app/api/buyer/purchased-properties', {
+                const response = await axios.get('http://real-estate-delta-tawny.vercel.app/api/buyer/purchased-properties', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
