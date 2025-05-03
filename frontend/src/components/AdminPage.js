@@ -6,6 +6,7 @@ import authService from '../services/AuthService';
 import { colors } from '../styles/commonStyles';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../redux/slices/authSlice';
+import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
 
 const Input = styled.input`
   padding: 12px;
@@ -35,6 +36,26 @@ const Select = styled.select`
     border-color: ${colors.accent};
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     outline: none;
+  }
+`;
+
+const InputBox = styled.div`
+  position: relative;
+  margin-bottom: 20px;
+`;
+
+const Icon = styled.span`
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #666;
+`;
+
+const StyledInput = styled(Input)`
+  padding-left: 45px;
+  &:focus + ${Icon} {
+    color: ${colors.accent};
   }
 `;
 
@@ -112,6 +133,85 @@ const AdminPage = () => {
     }));
   };
 
+  const handleDeleteUser = async (id) => {
+    try {
+      const token = authService.getToken();
+      await axios.delete(`https://real-estate-delta-tawny.vercel.app/api/admin/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchDashboardData();
+      alert('User deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
+
+  const handleDeleteProperty = async (id) => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.delete(
+        `https://real-estate-delta-tawny.vercel.app/api/admin/properties/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (response.status === 200) {
+        fetchDashboardData();
+        alert('Property deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      alert('Failed to delete property');
+    }
+  };
+
+  const handleDeleteFeedback = async (id) => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.delete(
+        `https://real-estate-delta-tawny.vercel.app/api/admin/feedback/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.status === 200) {
+        fetchDashboardData(); // Refresh the data
+        alert('Feedback deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting feedback:', error);
+      alert('Failed to delete feedback: ' + (error.response?.data?.message || 'Unknown error'));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formValues = {
+      name: e.target.name.value,
+      email: e.target.email.value,
+      password: e.target.password.value,
+      role: 'employee',
+      createdAt: new Date()
+    };
+
+    try {
+      const token = authService.getToken();
+      await axios.post(
+        'https://real-estate-delta-tawny.vercel.app/api/admin/add-employee',
+        formValues,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      e.target.reset();
+      fetchDashboardData();
+      alert('Employee added successfully!');
+    } catch (error) {
+      console.error('Error adding employee:', error);
+    }
+  };
+
   const FilterSection = styled.div`
     background: ${colors.white};
     padding: 1.5rem;
@@ -125,6 +225,27 @@ const AdminPage = () => {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 1rem;
+  `;
+
+  const FormSection = styled.div`
+    background: ${colors.white};
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  `;
+
+  const FormTitle = styled.h3`
+    color: ${colors.primary};
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+  `;
+
+  const FormGrid = styled.div`
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    max-width: 500px;
   `;
 
   const renderUserFilters = () => (
@@ -216,6 +337,61 @@ const AdminPage = () => {
     </FilterSection>
   );
 
+  const renderAddEmployeeForm = () => (
+    <FormSection>
+      <FormTitle>Add New Employee</FormTitle>
+      <form onSubmit={handleSubmit}>
+        <FormGrid>
+          <InputBox>
+            <StyledInput
+              type="text"
+              placeholder="Full Name"
+              name="name"
+              required
+            />
+            <Icon><FaUser /></Icon>
+          </InputBox>
+
+          <InputBox>
+            <StyledInput
+              type="email"
+              placeholder="Gmail Address"
+              name="email"
+              pattern="[a-z0-9._%+-]+@gmail\.com$"
+              title="Please enter a valid Gmail address"
+              required
+            />
+            <Icon><FaEnvelope /></Icon>
+          </InputBox>
+
+          <InputBox>
+            <StyledInput
+              type="password"
+              placeholder="Password"
+              name="password"
+              minLength="6"
+              title="Password must be at least 6 characters long"
+              required
+            />
+            <Icon><FaLock /></Icon>
+          </InputBox>
+
+          <ApplyFilterButton
+            type="submit"
+            style={{
+              width: '100%',
+              marginTop: '10px',
+              padding: '15px',
+              fontSize: '18px'
+            }}
+          >
+            Add Employee
+          </ApplyFilterButton>
+        </FormGrid>
+      </form>
+    </FormSection>
+  );
+
   const renderDashboard = () => (
     <DashboardGrid>
       <StatCard>
@@ -271,17 +447,23 @@ const AdminPage = () => {
             <th>Email</th>
             <th>Role</th>
             <th>Joined Date</th>
+            <th>Actions</th>
           </tr>
         </TableHeader>
         <TableBody>
-          {stats?.users?.map(user => (
-            <tr key={user._id}>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
-              <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-            </tr>
-          ))}
+          {stats?.users
+            ?.filter(user => user.role !== 'admin')
+            .map(user => (
+              <tr key={user._id}>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>{user.role}</td>
+                <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                <td>
+                  <DeleteButton onClick={() => handleDeleteUser(user._id)}>Delete</DeleteButton>
+                </td>
+              </tr>
+            ))}
         </TableBody>
       </Table>
     </TableContainer>
@@ -293,18 +475,41 @@ const AdminPage = () => {
         <TableHeader>
           <tr>
             <th>Title</th>
+            <th>Details</th>
             <th>Price</th>
+            <th>Location</th>
             <th>Status</th>
-            <th>Listed Date</th>
+            <th>Actions</th>
           </tr>
         </TableHeader>
         <TableBody>
           {stats?.properties?.map(property => (
             <tr key={property._id}>
               <td>{property.title}</td>
-              <td>₹{property.price.toLocaleString()}</td>
-              <td><StatusBadge status={property.status}>{property.status}</StatusBadge></td>
-              <td>{new Date(property.createdAt).toLocaleDateString()}</td>
+              <td>
+                <PropertyDetailsCell>
+                  <div>Size: {property.area} sq ft</div>
+                  <div>Bedrooms: {property.bedrooms}</div>
+                  <div>Bathrooms: {property.bathrooms}</div>
+                  <div>Type: {property.propertyType}</div>
+                </PropertyDetailsCell>
+              </td>
+              <td>₹{property.price?.toLocaleString()}</td>
+              <td>
+                <PropertyDetailsCell>
+                  <div>{property.location}</div>
+                </PropertyDetailsCell>
+              </td>
+              <td>
+                <StatusBadge status={property.status}>
+                  {property.status}
+                </StatusBadge>
+              </td>
+              <td>
+                <DeleteButton onClick={() => handleDeleteProperty(property._id)}>
+                  Delete
+                </DeleteButton>
+              </td>
             </tr>
           ))}
         </TableBody>
@@ -316,9 +521,18 @@ const AdminPage = () => {
     <FeedbackContainer>
       {stats?.feedbacks?.map(feedback => (
         <FeedbackCard key={feedback._id}>
-          <FeedbackContent>{feedback.message}</FeedbackContent>
+          <FeedbackContent>
+            <UserInfo>
+              <div>Name: {feedback.name}</div>
+              <div>Email: {feedback.email}</div>
+            </UserInfo>
+            <Message>{feedback.message}</Message>
+          </FeedbackContent>
           <FeedbackDetails>
             <span>{new Date(feedback.createdAt).toLocaleDateString()}</span>
+            <DeleteButton onClick={() => handleDeleteFeedback(feedback._id)}>
+              Delete
+            </DeleteButton>
           </FeedbackDetails>
         </FeedbackCard>
       ))}
@@ -334,32 +548,32 @@ const AdminPage = () => {
         <SidebarTitle>Admin Dashboard</SidebarTitle>
         <NavContainer>
           <NavItem>
-            <NavButton 
-              active={activeTab === 'dashboard'} 
+            <NavButton
+              active={activeTab === 'dashboard'}
               onClick={() => setActiveTab('dashboard')}
             >
               Dashboard
             </NavButton>
           </NavItem>
           <NavItem>
-            <NavButton 
-              active={activeTab === 'users'} 
+            <NavButton
+              active={activeTab === 'users'}
               onClick={() => setActiveTab('users')}
             >
               Users
             </NavButton>
           </NavItem>
           <NavItem>
-            <NavButton 
-              active={activeTab === 'properties'} 
+            <NavButton
+              active={activeTab === 'properties'}
               onClick={() => setActiveTab('properties')}
             >
               Properties
             </NavButton>
           </NavItem>
           <NavItem>
-            <NavButton 
-              active={activeTab === 'feedback'} 
+            <NavButton
+              active={activeTab === 'feedback'}
               onClick={() => setActiveTab('feedback')}
             >
               Feedback
@@ -383,6 +597,7 @@ const AdminPage = () => {
 
         {activeTab === 'users' && (
           <>
+            {renderAddEmployeeForm()}
             {renderUserFilters()}
             {renderUsers()}
           </>
@@ -406,7 +621,6 @@ const AdminPage = () => {
   );
 };
 
-// Updated styled components with better visibility
 const PageContainer = styled.div`
   height: 100%;
   position: relative;
@@ -557,13 +771,12 @@ const PropertyTitle = styled.h4`
 `;
 
 const StatusBadge = styled.span`
-  display: inline-block;
   padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 16px;
+  border-radius: 4px;
+  font-size: 14px;
   font-weight: 500;
   background: ${props => {
-    switch(props.status) {
+    switch (props.status) {
       case 'available': return '#e1f7e1';
       case 'pending': return '#fff3e1';
       case 'sold': return '#ffe1e1';
@@ -571,7 +784,7 @@ const StatusBadge = styled.span`
     }
   }};
   color: ${props => {
-    switch(props.status) {
+    switch (props.status) {
       case 'available': return '#2e7d32';
       case 'pending': return '#ed6c02';
       case 'sold': return '#d32f2f';
@@ -594,7 +807,7 @@ const ErrorDisplay = ({ error, onRetry }) => {
     <LoadingWrapper>
       <div style={{ textAlign: 'center' }}>
         <p style={{ color: '#dc3545', marginBottom: '1rem' }}>{error}</p>
-        <button 
+        <button
           onClick={onRetry}
           style={{
             padding: '8px 16px',
@@ -681,31 +894,39 @@ const TableContainer = styled.div`
   margin-top: 2rem;
   background: ${colors.white};
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  max-width: 100%;
 `;
 
 const Table = styled.table`
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 `;
 
 const TableHeader = styled.thead`
   background: ${colors.background};
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  
   th {
     padding: 1.2rem;
     text-align: left;
     font-weight: 600;
     color: ${colors.primary};
-    font-size: 16px;
+    font-size: 14px;
   }
 `;
 
 const TableBody = styled.tbody`
   td {
-    padding: 1.2rem;
+    padding: 1rem;
     border-bottom: 1px solid ${colors.border};
-    font-size: 16px;
+    font-size: 14px;
+    vertical-align: middle;
   }
 
   tr:hover {
@@ -730,5 +951,50 @@ const ApplyFilterButton = styled.button`
   }
 `;
 
-// Export the component
+const DeleteButton = styled.button`
+  padding: 6px 12px;
+  background: ${colors.danger};
+  color: ${colors.white};
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${colors.darkDanger};
+    transform: translateY(-2px);
+  }
+`;
+
+const PropertyDetailsCell = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+
+  div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+`;
+
+const UserInfo = styled.div`
+  margin-bottom: 1rem;
+  font-size: 1.6rem;
+  color: ${colors.primary};
+  
+  div {
+    margin-bottom: 0.5rem;
+  }
+`;
+
+const Message = styled.div`
+  font-size: 1.8rem;
+  color: ${colors.neutral};
+  line-height: 1.5;
+`;
+
 export default AdminPage;
