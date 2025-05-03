@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import AdvertisementRequest from '../models/AdvertisementRequest.js';
+import redisClient from '../utils/redis.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -86,7 +87,19 @@ export const deleteProperty = async (req, res) => {
 
 export const myProperties = async (req, res) => {
     try {
+        const start = Date.now();
         const properties = await Property.find({ seller: req.user.id });
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for myProperties took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(properties));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
         res.status(200).json(properties);
     } catch (error) {
         res.status(400).json({ success: false, message: 'Failed to fetch properties' });
@@ -152,10 +165,22 @@ export const advertiseProperty = async (req, res) => {
 
 export const getAdvertisementStatus = async (req, res) => {
     try {
+        const start = Date.now();
         const advertisements = await AdvertisementRequest.find({
             seller: req.user.id
         }).select('propertyId status');
         
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getAdvertisementStatus took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(advertisements));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
         res.status(200).json(advertisements);
     } catch (error) {
         console.error('Failed to fetch advertisement status:', error);

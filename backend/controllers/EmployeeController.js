@@ -1,6 +1,7 @@
 import Advertisement from '../models/Advertisement.js';
 import AdvertisementRequest from '../models/AdvertisementRequest.js';
 import Property from '../models/Property.js';
+import redisClient from '../utils/redis.js';
 
 export const addAdvertisement = async (req, res) => {
     const { title } = req.body;
@@ -68,6 +69,7 @@ export const deleteAdvertisement = async (req, res) => {
 
 export const getAdvertisements = async (req, res) => {
     try {
+        const start = Date.now();
         const advertisements = await Advertisement.find({ employee: req.user.id })
             .populate({
                 path: 'property',
@@ -87,6 +89,17 @@ export const getAdvertisements = async (req, res) => {
             property: ad.property
         }));
 
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getAdvertisements took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 300, JSON.stringify(formattedAds));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
         res.status(200).json(formattedAds);
     } catch (error) {
         console.error('Failed to fetch advertisements:', error);
@@ -96,10 +109,22 @@ export const getAdvertisements = async (req, res) => {
 
 export const getAdvertisementRequests = async (req, res) => {
     try {
+        const start = Date.now();
         const requests = await AdvertisementRequest.find()
             .populate('seller', 'email')
             .populate('property', 'title image')
             .sort({ createdAt: -1 });
+
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getAdvertisementRequests took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(requests));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
 
         res.status(200).json(requests);
     } catch (error) {
@@ -166,6 +191,7 @@ export const updateAdvertisementRequest = async (req, res) => {
 
 export const getApprovedAdvertisements = async (req, res) => {
     try {
+        const start = Date.now();
         const approvedAds = await AdvertisementRequest.find({ status: 'approved', employee: req.user.id })
             .populate({
                 path: 'property',
@@ -179,6 +205,17 @@ export const getApprovedAdvertisements = async (req, res) => {
             .sort({ advertisementDate: -1 });
 
         const activeApprovedAds = approvedAds.filter(ad => ad.property !== null);
+
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getApprovedAdvertisements took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 300, JSON.stringify(activeApprovedAds));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
 
         res.status(200).json(activeApprovedAds);
     } catch (error) {

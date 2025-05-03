@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Feedback from "../models/Feedback.js";
 import Property from "../models/Property.js";
 import bcrypt from "bcryptjs";
+import redisClient from '../utils/redis.js';
 
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
@@ -63,6 +64,7 @@ export const deleteFeedback = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
     try {
+        const start = Date.now();
         const {
             userDateFrom,
             userDateTo,
@@ -151,6 +153,17 @@ export const getDashboardStats = async (req, res) => {
             },
             recentProperties: properties.slice(0, 5),
         };
+
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for dashboard-stats took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(stats));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
 
         res.status(200).json(stats);
     } catch (error) {

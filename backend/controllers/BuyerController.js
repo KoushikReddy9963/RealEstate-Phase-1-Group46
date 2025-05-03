@@ -2,6 +2,7 @@ import Property from '../models/Property.js';
 import Purchase from '../models/Purchase.js';
 import User from '../models/User.js';
 import Favorite from '../models/Favorite.js';
+import redisClient from '../utils/redis.js';
 
 import dotenv from 'dotenv';
 import path from 'path';
@@ -74,6 +75,7 @@ export const purchaseProperty = async (req, res) => {
 
 export const viewProperties = async (req, res) => {
     try {
+        const start = Date.now();
         const {
             minPrice,
             maxPrice,
@@ -100,6 +102,17 @@ export const viewProperties = async (req, res) => {
             .populate('seller', 'name email')
             .sort({ createdAt: -1 });
 
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for viewProperties took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(properties));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
         res.status(200).json(properties);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch properties' });
@@ -108,6 +121,7 @@ export const viewProperties = async (req, res) => {
 
 export const getPurchasedProperties = async (req, res) => {
     try {
+        const start = Date.now();
         const purchases = await Purchase.find({ buyer: req.user.id })
             .populate({
                 path: 'property',
@@ -119,6 +133,17 @@ export const getPurchasedProperties = async (req, res) => {
             purchaseDate: purchase.purchaseDate,
             amount: purchase.amount
         }));
+
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getPurchasedProperties took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(purchasedProperties));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
 
         res.status(200).json(purchasedProperties);
     } catch (error) {
@@ -148,6 +173,7 @@ export const toggleFavorite = async (req, res) => {
 
 export const getFavorites = async (req, res) => {
     try {
+        const start = Date.now();
         const favorites = await Favorite.find({ userId: req.user.id })
             .populate({
                 path: 'propertyId',
@@ -156,6 +182,17 @@ export const getFavorites = async (req, res) => {
             .sort({ createdAt: -1 });
 
         const favoriteProperties = favorites.map(fav => fav.propertyId);
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getFavorites took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(favoriteProperties));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
         res.status(200).json(favoriteProperties);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch favorites' });
@@ -240,12 +277,24 @@ export const handleStripeWebhook = async (req, res) => {
 
 export const getPurchaseHistory = async (req, res) => {
     try {
+        const start = Date.now();
         const purchases = await Purchase.find({ buyer: req.user.id })
             .populate('property')
             .populate('seller', 'name email')
             .sort({ purchaseDate: -1 });
 
-        res.json(purchases);
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getPurchaseHistory took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(purchases));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
+        res.status(200).json(purchases);
     } catch (error) {
         console.error('Error fetching purchase history:', error);
         res.status(500).json({ message: 'Failed to fetch purchase history' });

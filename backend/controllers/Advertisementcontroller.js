@@ -1,7 +1,9 @@
 import Advertisement from '../models/Advertisement.js';
+import redisClient from '../utils/redis.js';
 
 export const getAdvertisement = async (req, res) => {
     try {
+        const start = Date.now();
         const advertisements = await Advertisement.find()
             .populate({
                 path: 'property',
@@ -22,7 +24,19 @@ export const getAdvertisement = async (req, res) => {
             }
         });
         
-        res.status(200).json(Array.from(uniqueAdvertisements.values()));
+        const response = Array.from(uniqueAdvertisements.values());
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getAdvertisement took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 300, JSON.stringify(response));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
+        res.status(200).json(response);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

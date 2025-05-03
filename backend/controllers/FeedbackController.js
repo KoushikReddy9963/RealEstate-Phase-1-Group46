@@ -1,4 +1,5 @@
 import Feedback from '../models/Feedback.js';
+import redisClient from '../utils/redis.js';
 
 export const addFeedback = async (req, res) => {
     const { name, email, message } = req.body;
@@ -18,7 +19,19 @@ export const addFeedback = async (req, res) => {
 
 export const getAllFeedbacks = async (req, res) => {
     try {
+        const start = Date.now();
         const feedbacks = await Feedback.find();
+        const duration = Date.now() - start;
+        console.log(`MongoDB query for getAllFeedbacks took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify({ success: true, feedbacks }));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+
         res.status(200).json({ success: true, feedbacks });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to fetch feedbacks', error: error.message });
