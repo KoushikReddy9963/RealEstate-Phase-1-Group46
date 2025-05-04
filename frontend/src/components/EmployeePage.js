@@ -465,39 +465,49 @@ const EmployeePage = () => {
                     <NoDataMessage>No advertisement requests found</NoDataMessage>
                 ) : (
                     <RequestsGrid>
-                        {advertisementRequests.map(request => (
-                            <RequestCard key={request._id}>
-                                <RequestImage 
-                                    src={`data:image/jpeg;base64,${request.property.image}`} 
-                                    alt={request.property.title}
-                                />
-                                <RequestInfo>
-                                    <h3>{request.property.title}</h3>
-                                    <p>Seller: {request.seller.email}</p>
-                                    <StatusBadge status={request.status}>
-                                        {request.status.toUpperCase()}
-                                    </StatusBadge>
-                                </RequestInfo>
-                                {request.status === 'pending' && (
-                                    <RequestActions>
-                                        <RequestActionButton 
-                                            className="approve"
-                                            onClick={() => handleUpdateRequest(request._id, 'approved')}
-                                            disabled={loading}
-                                        >
-                                            Approve
-                                        </RequestActionButton>
-                                        <RequestActionButton 
-                                            className="reject"
-                                            onClick={() => handleUpdateRequest(request._id, 'rejected')}
-                                            disabled={loading}
-                                        >
-                                            Reject
-                                        </RequestActionButton>
-                                    </RequestActions>
-                                )}
-                            </RequestCard>
-                        ))}
+                        {advertisementRequests.map(request => {
+                            const hasProperty = request.property && request.property.image && request.property.title;
+                            return (
+                                <RequestCard key={request._id}>
+                                    {hasProperty ? (
+                                        <RequestImage 
+                                            src={`data:image/jpeg;base64,${request.property.image}`} 
+                                            alt={request.property.title}
+                                        />
+                                    ) : (
+                                        <RequestImage 
+                                            src="https://via.placeholder.com/400x300?text=No+Image" 
+                                            alt="No property"
+                                        />
+                                    )}
+                                    <RequestInfo>
+                                        <h3>{hasProperty ? request.property.title : "No property"}</h3>
+                                        <p>Seller: {request.seller?.email || "Unknown"}</p>
+                                        <StatusBadge status={request.status}>
+                                            {request.status?.toUpperCase() || "UNKNOWN"}
+                                        </StatusBadge>
+                                    </RequestInfo>
+                                    {request.status === 'pending' && (
+                                        <RequestActions>
+                                            <RequestActionButton 
+                                                className="approve"
+                                                onClick={() => handleUpdateRequest(request._id, 'approved')}
+                                                disabled={loading}
+                                            >
+                                                Approve
+                                            </RequestActionButton>
+                                            <RequestActionButton 
+                                                className="reject"
+                                                onClick={() => handleUpdateRequest(request._id, 'rejected')}
+                                                disabled={loading}
+                                            >
+                                                Reject
+                                            </RequestActionButton>
+                                        </RequestActions>
+                                    )}
+                                </RequestCard>
+                            );
+                        })}
                     </RequestsGrid>
                 )}
             </RequestsSection>
