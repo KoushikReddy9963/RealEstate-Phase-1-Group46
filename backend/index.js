@@ -2,7 +2,6 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import path from 'path';
 import redisClient from './utils/redis.js';
 import userRoutes from './routes/userRoutes.js';
 import buyerRoutes from './routes/buyerRoutes.js';
@@ -11,6 +10,7 @@ import employeeRoutes from './routes/employeeRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import AdvertisementRoutes from './routes/AdvertisementRoutes.js';
 import feedbackroutes from './routes/feedbackroutes.js';
+import { swaggerUiServe, swaggerUiSetup } from './swagger.js';
 
 dotenv.config();
 
@@ -34,6 +34,11 @@ app.use('/api/employee', employeeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/adv', AdvertisementRoutes);
 app.use('/api/feedback', feedbackroutes);
+app.use('/api/docs', swaggerUiServe, swaggerUiSetup);
+
+app.get('/api', (req, res) => {
+  res.redirect('/api/docs');
+});
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
