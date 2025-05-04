@@ -1,40 +1,14 @@
-import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './swagger-output.json' assert { type: "json" };
 
-const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'EstateCraft API',
-      version: '1.0.0',
-      description: 'API documentation for EstateCraft Real Estate Management Platform',
-    },
-    servers: [
-      {
-        url: "https://real-estate-delta-tawny.vercel.app/api",
-      },
-    ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
-  },
-  apis: [
-    './routes/*.js',
-    './controllers/*.js',
-  ],
-};
+const customCssUrl = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css';
+const customJs = [
+  'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js'
+];
 
-export const swaggerSpec = swaggerJSDoc(options);
 export const swaggerUiServe = swaggerUi.serve;
-export const swaggerUiSetup = swaggerUi.setup(swaggerSpec);
+export const swaggerUiSetup = swaggerUi.setup(swaggerDocument, false, {
+  customCssUrl,
+  customJs,
+});
