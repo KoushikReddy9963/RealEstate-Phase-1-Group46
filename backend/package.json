@@ -5,8 +5,9 @@
     "main": "index.js",
     "scripts": {
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config=jest.config.js",
-        "start": "node ./index.js",
-        "dev": "nodemon ./index.js",
+        "swagger-autogen": "node ./swagger-autogen.js",
+        "start": "npm run swagger-autogen && node index.js",
+        "dev": "npm run swagger-autogen && node index.js",
         "vercel-build": "node ./swagger-autogen.js"
     },
     "author": "Koushik",
