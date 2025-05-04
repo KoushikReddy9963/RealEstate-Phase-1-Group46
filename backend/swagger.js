@@ -1,5 +1,7 @@
 import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from './swagger-output.json' assert { type: "json" };
+import fs from 'fs';
+
+const swaggerDocument = JSON.parse(fs.readFileSync('./swagger-output.json', 'utf-8'));
 
 const customCssUrl = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css';
 const customJs = [
