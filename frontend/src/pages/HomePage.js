@@ -116,7 +116,6 @@ const Homepage = () => {
       <section className="home" id="home">
         <div className="content">
           <h3>Welcome to EstateCraft buy sell Advertise Properties</h3>
-          <a href="#!" className="btn">Read more</a>
         </div>
       </section>
 
@@ -222,7 +221,7 @@ const Homepage = () => {
         </div>
 
         <div className="credit">
-          created by <span>Nourish Nest by spoonacular api</span> | All rights are reserved!
+          created by <span>EstateCraft reserved by IIIT SRI CITY</span> | All rights are reserved!
         </div>
       </section>
     </>

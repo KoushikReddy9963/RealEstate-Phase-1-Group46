@@ -168,20 +168,33 @@ export const getAdvertisementStatus = async (req, res) => {
         const start = Date.now();
         const advertisements = await AdvertisementRequest.find({
             seller: req.user.id
-        }).select('propertyId status');
-        
+        })
+        .sort({ createdAt: -1 })
+        .lean();
+        const latestRequests = {};
+        for (const ad of advertisements) {
+            const propId = ad.property?.toString() || ad.propertyId?.toString();
+            if (propId && !latestRequests[propId]) {
+                latestRequests[propId] = {
+                    property: propId,
+                    status: ad.status,
+                    _id: ad._id,
+                    createdAt: ad.createdAt,
+                };
+            }
+        }
         const duration = Date.now() - start;
         console.log(`MongoDB query for getAdvertisementStatus took ${duration}ms`);
         if (req.cacheKey) {
             try {
-                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(advertisements));
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(Object.values(latestRequests)));
                 console.log(`Cached response for ${req.cacheKey}`);
             } catch (err) {
                 console.error(`Failed to cache ${req.cacheKey}:`, err.message);
             }
         }
 
-        res.status(200).json(advertisements);
+        res.status(200).json(Object.values(latestRequests));
     } catch (error) {
         console.error('Failed to fetch advertisement status:', error);
         res.status(500).json({ message: 'Failed to fetch advertisement status' });

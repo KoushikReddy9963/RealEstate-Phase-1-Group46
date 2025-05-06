@@ -781,7 +781,7 @@ const SellerPage = () => {
   }, [view]);
 
   const getRequestStatus = (propertyId) => {
-    const request = advertisementRequests.find(req => req.property === propertyId);
+    const request = advertisementRequests.find(req => req.property === propertyId || req.propertyId === propertyId);
     return request ? request.status : null;
   };
 
@@ -937,26 +937,23 @@ const SellerPage = () => {
               <PropertiesGrid>
                 {myProperties.map(property => {
                   const adStatus = getRequestStatus(property._id);
+
                   return (
                     <PropertyCard key={property._id}>
                       <StatusBadge status={property.status || 'available'}>
                         {property.status || 'Available'}
                       </StatusBadge>
-                      
                       {property.image && (
                         <PropertyImage 
                           src={`data:image/jpeg;base64,${property.image}`}
                           alt={property.title}
                         />
                       )}
-                      
                       <PropertyTitle>{property.title}</PropertyTitle>
-                      
                       <PriceTag>
                         <BiDollar />
                         ₹{property.price.toLocaleString()}
                       </PriceTag>
-                      
                       <PropertyDetails>
                         <p>
                           <FaMapMarkerAlt />
@@ -982,7 +979,8 @@ const SellerPage = () => {
                         )}
                       </PropertyDetails>
 
-                      {property.status === 'available' && !adStatus && (
+                      {/* Only show Advertise button if NO request or last request was rejected */}
+                      {property.status === 'available' && (!adStatus || adStatus === 'rejected') && (
                         <AdvertiseButton 
                           onClick={() => handleAdvertise(
                             property._id,
@@ -991,29 +989,16 @@ const SellerPage = () => {
                             property.image
                           )}
                         >
-                          <FaBullhorn /> Advertise Property
+                          <FaBullhorn /> {adStatus === 'rejected' ? <><FaRedo /> Try Again</> : <>Advertise Property</>}
                         </AdvertiseButton>
                       )}
-                      
-                      {property.status === 'available' && adStatus === 'rejected' && (
-                        <RejectedButton 
-                          onClick={() => handleAdvertise(
-                            property._id,
-                            property.price,
-                            property.title,
-                            property.image
-                          )}
-                        >
-                          <FaRedo /> Try Again
-                        </RejectedButton>
-                      )}
-                      
+
+                      {/* Pending and Approved states */}
                       {adStatus === 'pending' && (
                         <PendingButton disabled>
                           <FaClock /> Advertisement Pending
                         </PendingButton>
                       )}
-                      
                       {adStatus === 'approved' && (
                         <ApprovedButton disabled>
                           <FaCheckCircle /> Advertisement Active
