@@ -478,13 +478,6 @@ const ApprovedButton = styled(AdvertiseButton)`
   }
 `;
 
-const RejectedButton = styled(AdvertiseButton)`
-  background: #dc3545;
-  &:hover {
-    background: #c82333;
-  }
-`;
-
 const DeleteButton = styled.button`
   padding: 8px 16px;
   background: #dc3545;

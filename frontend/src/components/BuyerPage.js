@@ -398,6 +398,7 @@ const BuyerPage = () => {
     minArea: '',
     maxArea: '',
   });
+  const [isPaying, setIsPaying] = useState({}); 
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -474,7 +475,6 @@ const BuyerPage = () => {
     }
   }, []);
 
-  // Improved toggleFavorite to always fetch latest favorites after change
   const toggleFavorite = async (propertyId) => {
     try {
       const token = authService.getToken();
@@ -499,6 +499,13 @@ const BuyerPage = () => {
   };
 
   const handlePurchase = async (propertyId, price, title) => {
+    // Prevent multiple clicks within 12 seconds for the same property
+    if (isPaying[propertyId]) {
+      toast.info('Please wait before trying again.');
+      return;
+    }
+    setIsPaying(prev => ({ ...prev, [propertyId]: true }));
+
     try {
       const token = authService.getToken();
       const response = await axios.post(
@@ -517,27 +524,26 @@ const BuyerPage = () => {
         }
       );
 
-      console.log('Stripe response:', response.data);
-
       if (response.data && response.data.paymentUrl) {
         setProperties(prevProperties =>
           prevProperties.map(prop =>
             prop._id === propertyId ? { ...prop, status: 'sold' } : prop
           )
         );
-
         window.location.href = response.data.paymentUrl;
       } else {
-        console.error('Invalid Stripe response:', response.data);
         toast.error('Failed to initiate payment: Invalid response from server');
       }
     } catch (error) {
-      console.error('Purchase initiation failed:', error);
       toast.error(error.response?.data?.message || 'Failed to initiate purchase');
+    } finally {
+      // Allow pay button again after 12 seconds
+      setTimeout(() => {
+        setIsPaying(prev => ({ ...prev, [propertyId]: false }));
+      }, 12000);
     }
   };
 
-  // Fetch properties or favorites/purchased based on tab
   useEffect(() => {
     if (activeTab === 'favorites') {
       fetchFavorites();
@@ -645,15 +651,19 @@ const BuyerPage = () => {
                 <span><strong>Description:</strong> {property.description || 'No description provided'}</span>
               </PropertyInfo>
 
-              <PropertyInfo>
-                <FaEnvelope />
-                <span><strong>Contact:</strong> {property.userEmail || 'Email not provided'}</span>
-              </PropertyInfo>
-
-              <PropertyInfo>
-                <FaCalendarAlt />
-                <span><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</span>
-              </PropertyInfo>
+              {/* Hide Contact and Listed on for purchased tab */}
+              {activeTab !== 'purchased' && (
+                <>
+                  <PropertyInfo>
+                    <FaEnvelope />
+                    <span><strong>Contact:</strong> {property.userEmail || 'Email not provided'}</span>
+                  </PropertyInfo>
+                  <PropertyInfo>
+                    <FaCalendarAlt />
+                    <span><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</span>
+                  </PropertyInfo>
+                </>
+              )}
 
               {property.status === 'available' && activeTab !== 'purchased' && (
                 <BuyButton
@@ -662,8 +672,9 @@ const BuyerPage = () => {
                     property.price,
                     property.title
                   )}
+                  disabled={!!isPaying[property._id]}
                 >
-                  <FaShoppingCart /> Buy Property
+                  <FaShoppingCart /> {isPaying[property._id] ? 'Processing...' : 'Buy Property'}
                 </BuyButton>
               )}
             </PropertyDetails>
