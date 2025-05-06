@@ -31,6 +31,36 @@ const EmployeePage = () => {
     const dispatch = useDispatch();
 
     const handleLogout = useCallback(() => {
+        // Clear all localStorage
+        localStorage.clear();
+        
+        // Clear cache and reload
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                names.forEach(name => {
+                    caches.delete(name);
+                });
+            });
+        }
+
+        // Reset all state
+        setTitle('');
+        setImage(null);
+        setPreview(null);
+        setAdvertisements([]);
+        setLoading(false);
+        setActiveTab('upload');
+        setEditingId(null);
+        setAdvertisementRequests([]);
+        setStats({
+            totalAdvertisements: 0,
+            totalRevenue: 0,
+            totalPropertyRevenue: 0,
+            totalAdvertisementRevenue: 0,
+            activeCampaigns: 0
+        });
+
+        // Dispatch logout action and navigate
         dispatch(logoutUser());
         navigate('/login');
     }, [dispatch, navigate]);
@@ -103,7 +133,6 @@ const EmployeePage = () => {
 
         const interval = setInterval(() => {
             fetchAdvertisements();
-            fetchStats();
         }, 2 * 60 * 1000);
 
         return () => clearInterval(interval);
