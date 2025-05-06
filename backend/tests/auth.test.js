@@ -9,9 +9,11 @@ import app from '../index.js';
 
 describe('Auth Routes', () => {
   test('POST /api/users/login - should log in a user', async () => {
+    let testEmail = 'seller@gmail.com';
+    let testPassword = 'seller';
     const res = await request(app).post('/api/users/login').send({
-      email: 'seller@gmail.com',
-      password: 'seller'
+      email: testEmail,
+      password: testPassword,
     });
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('token');
