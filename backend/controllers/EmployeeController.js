@@ -96,15 +96,7 @@ export const getRevenueStats = async (req, res) => {
 
         // Total revenue
         const totalRevenue = totalPropertyRevenue + totalAdvertisementRevenue;
-        console.log(`MongoDB query for getAdvertisementRequests took ${duration}ms`);
-        if (req.cacheKey) {
-            try {
-                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(requests));
-                console.log(`Cached response for ${req.cacheKey}`);
-            } catch (err) {
-                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
-            }
-        }
+
         res.status(200).json({
             success: true,
             data: {
