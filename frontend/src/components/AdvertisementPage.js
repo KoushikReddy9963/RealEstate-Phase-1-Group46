@@ -139,7 +139,7 @@ const AdvertisementPage = () => {
     useEffect(() => {
         const fetchAdvertisements = async () => {
             try {
-                const response = await axios.get("https://real-estate-delta-tawny.vercel.app/api/adv/Advertisement");
+                const response = await axios.get("https://realestate-9evw.onrender.com/api/adv/Advertisement");
                 console.log("Advertisement data:", response.data);
                 setAdvertisements(response.data);
             } catch (error) {
@@ -172,7 +172,7 @@ const AdvertisementPage = () => {
                                 src={ad.property?.image?.startsWith('/9j') 
                                     ? `data:image/jpeg;base64,${ad.property.image}`
                                     : ad.property?.image 
-                                        ? `https://real-estate-delta-tawny.vercel.app/uploads/${ad.property.image}`
+                                        ? `https://realestate-9evw.onrender.com/uploads/${ad.property.image}`
                                         : 'https://via.placeholder.com/400x300?text=Property+Image'
                                 } 
                                 alt={ad.property?.title || 'Property'} 

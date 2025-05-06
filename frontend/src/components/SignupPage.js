@@ -16,7 +16,7 @@ const SignupPage = () => {
         e.preventDefault();
         setError('');
         try {
-            await axios.post('https://real-estate-delta-tawny.vercel.app/api/users/signup', { name, email, password, role });
+            await axios.post('https://realestate-9evw.onrender.com/api/users/signup', { name, email, password, role });
             navigate('/login');
         } catch (err) {
             setError('Something went wrong, please try again.');

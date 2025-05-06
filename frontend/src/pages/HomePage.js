@@ -24,7 +24,7 @@ const Homepage = () => {
     try {
         console.log('Submitting feedback:', formData); // Debug log
         
-        const response = await fetch('https://real-estate-delta-tawny.vercel.app/api/feedback', {
+        const response = await fetch('https://realestate-9evw.onrender.com/api/feedback', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
