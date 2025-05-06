@@ -8,9 +8,7 @@ import { colors } from '../styles/AuthStyles';
 import { FaSignOutAlt, FaUpload, FaChartLine, FaList, FaTrash, FaEdit } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { 
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell 
-} from 'recharts';
+import { Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
 const EmployeePage = () => {
     const [title, setTitle] = useState('');
@@ -20,29 +18,15 @@ const EmployeePage = () => {
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('upload');
     const [editingId, setEditingId] = useState(null);
-    const [mockData] = useState({
-        monthlyAds: [
-            { month: 'Jan', count: 4 },
-            { month: 'Feb', count: 6 },
-            { month: 'Mar', count: 8 },
-            { month: 'Apr', count: 5 },
-            { month: 'May', count: 9 },
-            { month: 'Jun', count: 7 },
-        ],
-        adPerformance: [
-            { name: 'Views', value: 400 },
-            { name: 'Clicks', value: 300 },
-            { name: 'Conversions', value: 100 },
-        ],
-        transactions: [
-            { id: 'tx_1234', date: '2024-03-15', amount: 99.99, status: 'completed' },
-            { id: 'tx_5678', date: '2024-03-14', amount: 149.99, status: 'completed' },
-            { id: 'tx_9012', date: '2024-03-13', amount: 199.99, status: 'pending' },
-        ]
-    });
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
     const [advertisementRequests, setAdvertisementRequests] = useState([]);
-    
+    const [stats, setStats] = useState({
+        totalAdvertisements: 0,
+        totalRevenue: 0,
+        totalPropertyRevenue: 0,
+        totalAdvertisementRevenue: 0,
+        activeCampaigns: 0
+    });
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -78,9 +62,52 @@ const EmployeePage = () => {
         }
     }, [handleLogout]);
 
+    const fetchStats = useCallback(async () => {
+        try {
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                console.error('No user data found');
+                handleLogout();
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            const response = await axios.get('https://realestate-9evw.onrender.com/api/employee/revenue-stats', {
+                headers: { 
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+
+            setStats({
+                totalAdvertisements: advertisements.length,
+                totalRevenue: response.data.data.totalRevenue,
+                totalPropertyRevenue: response.data.data.totalPropertyRevenue,
+                totalAdvertisementRevenue: response.data.data.totalAdvertisementRevenue,
+                activeCampaigns: advertisements.filter(ad => ad.status === 'active').length
+            });
+        } catch (error) {
+            console.error('Failed to fetch stats:', error);
+            toast.error('Failed to fetch stats');
+        }
+    }, [advertisements, handleLogout]);
+
     useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            handleLogout();
+            return;
+        }
+
         fetchAdvertisements();
-    }, [fetchAdvertisements]);
+        fetchStats();
+
+        const interval = setInterval(() => {
+            fetchAdvertisements();
+            fetchStats();
+        }, 2 * 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [fetchAdvertisements, fetchStats, handleLogout]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -255,7 +282,7 @@ const EmployeePage = () => {
 
     useEffect(() => {
         fetchAdvertisementRequests();
-    }, [fetchAdvertisementRequests]);
+    }, [fetchAdvertisementRequests, fetchStats, handleLogout]);
 
     return (
         <PageContainer>
@@ -378,36 +405,35 @@ const EmployeePage = () => {
                         <StatsGrid>
                             <StatCard>
                                 <StatTitle>Total Advertisements</StatTitle>
-                                <StatValue>{advertisements.length}</StatValue>
+                                <StatValue>{stats.totalAdvertisements}</StatValue>
                             </StatCard>
                             <StatCard>
                                 <StatTitle>Total Revenue</StatTitle>
-                                <StatValue>$1,249.99</StatValue>
+                                <StatValue>₹{stats.totalRevenue.toFixed(2)}</StatValue>
+                            </StatCard>
+                            <StatCard>
+                                <StatTitle>Property Revenue</StatTitle>
+                                <StatValue>₹{stats.totalPropertyRevenue.toFixed(2)}</StatValue>
+                            </StatCard>
+                            <StatCard>
+                                <StatTitle>Advertisement Revenue</StatTitle>
+                                <StatValue>₹{stats.totalAdvertisementRevenue.toFixed(2)}</StatValue>
                             </StatCard>
                             <StatCard>
                                 <StatTitle>Active Campaigns</StatTitle>
-                                <StatValue>12</StatValue>
+                                <StatValue>{stats.activeCampaigns}</StatValue>
                             </StatCard>
                         </StatsGrid>
 
                         <ChartSection>
                             <ChartContainer>
-                                <ChartTitle>Monthly Advertisements</ChartTitle>
-                                <BarChart width={500} height={300} data={mockData.monthlyAds}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="month" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Bar dataKey="count" fill={colors.accent} />
-                                </BarChart>
-                            </ChartContainer>
-
-                            <ChartContainer>
-                                <ChartTitle>Advertisement Performance</ChartTitle>
+                                <ChartTitle>Revenue Breakdown</ChartTitle>
                                 <PieChart width={400} height={300}>
                                     <Pie
-                                        data={mockData.adPerformance}
+                                        data={[
+                                            { name: 'Property Revenue', value: stats.totalPropertyRevenue },
+                                            { name: 'Advertisement Revenue', value: stats.totalAdvertisementRevenue }
+                                        ]}
                                         cx={200}
                                         cy={150}
                                         innerRadius={60}
@@ -416,43 +442,14 @@ const EmployeePage = () => {
                                         dataKey="value"
                                         label
                                     >
-                                        {mockData.adPerformance.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
+                                        <Cell fill="#0088FE" />
+                                        <Cell fill="#00C49F" />
                                     </Pie>
                                     <Tooltip />
                                     <Legend />
                                 </PieChart>
                             </ChartContainer>
                         </ChartSection>
-
-                        <TransactionSection>
-                            <ChartTitle>Recent Transactions</ChartTitle>
-                            <TransactionTable>
-                                <thead>
-                                    <tr>
-                                        <th>Transaction ID</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mockData.transactions.map((tx) => (
-                                        <tr key={tx.id}>
-                                            <td>{tx.id}</td>
-                                            <td>{new Date(tx.date).toLocaleDateString()}</td>
-                                            <td>${tx.amount}</td>
-                                            <td>
-                                                <StatusBadge status={tx.status}>
-                                                    {tx.status}
-                                                </StatusBadge>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </TransactionTable>
-                        </TransactionSection>
                     </ContentSection>
                 )}
             </MainContent>
@@ -790,37 +787,6 @@ const ChartTitle = styled.h3`
     text-align: center;
     font-size: 1.2rem;
 `;
-
-const TransactionSection = styled.div`
-    margin-top: 30px;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-`;
-
-const TransactionTable = styled.table`
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-
-    th, td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid ${colors.neutral}20;
-    }
-
-    th {
-        background-color: ${colors.background};
-        color: ${colors.primary};
-        font-weight: 600;
-    }
-
-    tr:hover {
-        background-color: ${colors.background};
-    }
-`;
-
 
 const RequestsSection = styled.div`
     margin-top: 30px;

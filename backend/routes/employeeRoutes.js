@@ -8,7 +8,8 @@ import {
   getAdvertisementRequests,
   updateAdvertisementRequest,
   deleteAdvertisementRequest,
-  getApprovedAdvertisements
+  getApprovedAdvertisements,
+  getRevenueStats
 } from '../controllers/EmployeeController.js';
 import cacheMiddleware from '../middlewares/cache.js';
 import redisClient from '../utils/redis.js';
@@ -75,6 +76,24 @@ router.post('/advertisement', verifyJWT, roleCheck(['employee']), async (req, re
     next(err);
   }
 });
+
+/**
+ * @swagger
+ * /employee/revenue-stats:
+ *   get:
+ *     summary: Get revenue statistics
+ *     tags: [Employee]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Revenue stats retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/revenue-stats', verifyJWT, roleCheck(['employee']), cacheMiddleware, getRevenueStats);
 
 /**
  * @swagger

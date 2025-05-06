@@ -3,25 +3,45 @@ import AdvertisementRequest from '../models/AdvertisementRequest.js';
 import Property from '../models/Property.js';
 import redisClient from '../utils/redis.js';
 
+// Helper function to validate advertisement data
+const validateAdvertisement = (title, file) => {
+    if (!title || !file) {
+        return 'Title and image file are required';
+    }
+    if (!file.mimetype.startsWith('image/')) {
+        return 'Only image files are allowed';
+    }
+    return null;
+};
+
 export const addAdvertisement = async (req, res) => {
     const { title } = req.body;
     const { file } = req;
 
-    if (!file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+    // Validate input
+    const validationError = validateAdvertisement(title, file);
+    if (validationError) {
+        return res.status(400).json({ message: validationError });
     }
 
     const imageBase64 = file.buffer.toString('base64');
 
     try {
+        // Check for duplicate advertisement with the same title
+        const existingAd = await Advertisement.findOne({ title });
+        if (existingAd) {
+            return res.status(400).json({ message: 'An advertisement with this title already exists' });
+        }
+
         const newAdvertisement = await Advertisement.create({
             employee: req.user.id,
             title,
             content: imageBase64
         });
+
         res.status(201).json(newAdvertisement);
     } catch (error) {
-        console.log(error);
+        console.error('Failed to add advertisement:', error);
         res.status(500).json({ message: 'Failed to add advertisement' });
     }
 };
@@ -31,11 +51,22 @@ export const editAdvertisement = async (req, res) => {
     const { title } = req.body;
     const { file } = req;
 
+    // Validate input
+    if (!title) {
+        return res.status(400).json({ message: 'Title is required' });
+    }
+
     try {
         const advertisement = await Advertisement.findById(id);
         
         if (!advertisement) {
             return res.status(404).json({ message: 'Advertisement not found' });
+        }
+
+        // Check for duplicate advertisement with the same title (excluding the current one)
+        const existingAd = await Advertisement.findOne({ title, _id: { $ne: id } });
+        if (existingAd) {
+            return res.status(400).json({ message: 'An advertisement with this title already exists' });
         }
 
         advertisement.title = title;
@@ -48,8 +79,43 @@ export const editAdvertisement = async (req, res) => {
         const updatedAdvertisement = await advertisement.save();
         res.status(200).json(updatedAdvertisement);
     } catch (error) {
-        console.error(error);
+        console.error('Failed to update advertisement:', error);
         res.status(500).json({ message: 'Failed to update advertisement' });
+    }
+};
+
+export const getRevenueStats = async (req, res) => {
+    try {
+        // Fetch all sold properties
+        const soldProperties = await Property.find({ status: 'sold' });
+        const totalPropertyRevenue = soldProperties.reduce((sum, property) => sum + (property.price * 0.001), 0);
+
+        // Fetch all advertisements
+        const advertisements = await Advertisement.find();
+        const totalAdvertisementRevenue = advertisements.length * 100;
+
+        // Total revenue
+        const totalRevenue = totalPropertyRevenue + totalAdvertisementRevenue;
+        console.log(`MongoDB query for getAdvertisementRequests took ${duration}ms`);
+        if (req.cacheKey) {
+            try {
+                await redisClient.setEx(req.cacheKey, 120, JSON.stringify(requests));
+                console.log(`Cached response for ${req.cacheKey}`);
+            } catch (err) {
+                console.error(`Failed to cache ${req.cacheKey}:`, err.message);
+            }
+        }
+        res.status(200).json({
+            success: true,
+            data: {
+                totalPropertyRevenue: parseFloat(totalPropertyRevenue.toFixed(2)),
+                totalAdvertisementRevenue,
+                totalRevenue: parseFloat(totalRevenue.toFixed(2))
+            }
+        });
+    } catch (error) {
+        console.error('Failed to fetch revenue stats:', error);
+        res.status(500).json({ message: 'Failed to fetch revenue stats' });
     }
 };
 
