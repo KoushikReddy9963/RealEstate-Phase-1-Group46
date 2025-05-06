@@ -84,7 +84,8 @@ export const viewProperties = async (req, res) => {
             minBedrooms,
             minBathrooms,
             minArea,
-            maxArea
+            maxArea,
+            title // <-- Add title from query
         } = req.query;
 
         let filter = { status: 'available' };
@@ -93,6 +94,7 @@ export const viewProperties = async (req, res) => {
         if (maxPrice) filter.price = { ...filter.price, $lte: Number(maxPrice) };
         if (propertyType) filter.propertyType = propertyType;
         if (location) filter.location = { $regex: location, $options: 'i' };
+        if (title) filter.title = { $regex: title, $options: 'i' };
         if (minBedrooms) filter.bedrooms = { $gte: Number(minBedrooms) };
         if (minBathrooms) filter.bathrooms = { $gte: Number(minBathrooms) };
         if (minArea) filter.area = { $gte: Number(minArea) };

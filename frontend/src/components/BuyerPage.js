@@ -204,7 +204,9 @@ const StatusBadge = styled.span`
   z-index: 2;
 `;
 
-const FavoriteButton = styled.button`
+const FavoriteButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== 'isFavorite'
+})`
   position: absolute;
   top: 20px;
   left: 20px;
@@ -386,6 +388,7 @@ const BuyerPage = () => {
   const [purchasedProperties, setPurchasedProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
+    title: '', 
     minPrice: '',
     maxPrice: '',
     location: '',
@@ -402,18 +405,18 @@ const BuyerPage = () => {
   const handleFilterSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const formData = new FormData(e.target);
       const newFilters = {};
       formData.forEach((value, key) => {
-        if (value) { 
+        if (value) {
           newFilters[key] = value;
         }
       });
+
+      setFilters(prev => ({ ...prev, ...newFilters }));
       
-      setFilters(newFilters);
-      await applyFilters();
     } catch (error) {
       console.error('Error applying filters:', error);
     } finally {
@@ -446,6 +449,7 @@ const BuyerPage = () => {
     }
   }, [filters]);
 
+  // Fetch favorites from backend for consistency
   const fetchFavorites = useCallback(async () => {
     try {
       const token = authService.getToken();
@@ -470,26 +474,27 @@ const BuyerPage = () => {
     }
   }, []);
 
+  // Improved toggleFavorite to always fetch latest favorites after change
   const toggleFavorite = async (propertyId) => {
     try {
       const token = authService.getToken();
       const isFavorite = favorites.some(fav => fav._id === propertyId);
-      
+
       if (isFavorite) {
         await axios.delete(`https://realestate-9evw.onrender.com/api/buyer/favorites/${propertyId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setFavorites(favorites.filter(fav => fav._id !== propertyId));
       } else {
-        await axios.post('https://realestate-9evw.onrender.com/api/buyer/favorites', 
+        await axios.post('https://realestate-9evw.onrender.com/api/buyer/favorites',
           { propertyId },
-          { headers: { Authorization: `Bearer ${token}` }}
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        const property = properties.find(p => p._id === propertyId);
-        setFavorites([...favorites, property]);
       }
+      // Always refresh favorites after change
+      fetchFavorites();
     } catch (error) {
       console.error('Error toggling favorite:', error);
+      toast.error('Failed to update favorites');
     }
   };
 
@@ -515,12 +520,12 @@ const BuyerPage = () => {
       console.log('Stripe response:', response.data);
 
       if (response.data && response.data.paymentUrl) {
-        setProperties(prevProperties => 
-          prevProperties.map(prop => 
+        setProperties(prevProperties =>
+          prevProperties.map(prop =>
             prop._id === propertyId ? { ...prop, status: 'sold' } : prop
           )
         );
-        
+
         window.location.href = response.data.paymentUrl;
       } else {
         console.error('Invalid Stripe response:', response.data);
@@ -532,6 +537,7 @@ const BuyerPage = () => {
     }
   };
 
+  // Fetch properties or favorites/purchased based on tab
   useEffect(() => {
     if (activeTab === 'favorites') {
       fetchFavorites();
@@ -562,11 +568,19 @@ const BuyerPage = () => {
     }
   }, [activeTab, fetchFavorites, fetchPurchasedProperties]);
 
+  // Apply filters when filters state changes and tab is available
+  useEffect(() => {
+    if (activeTab === 'available') {
+      applyFilters();
+    }
+    // eslint-disable-next-line
+  }, [filters, activeTab]);
+
   const renderProperties = () => {
-    const propertiesToShow = activeTab === 'favorites' 
-      ? favorites 
-      : activeTab === 'purchased' 
-        ? purchasedProperties 
+    const propertiesToShow = activeTab === 'favorites'
+      ? favorites
+      : activeTab === 'purchased'
+        ? purchasedProperties
         : properties;
 
     if (propertiesToShow.length === 0) {
@@ -584,9 +598,9 @@ const BuyerPage = () => {
             <StatusBadge status={property.status || 'available'}>
               {property.status ? property.status.charAt(0).toUpperCase() + property.status.slice(1) : 'Available'}
             </StatusBadge>
-            
+
             {activeTab !== 'purchased' && (
-              <FavoriteButton 
+              <FavoriteButton
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleFavorite(property._id);
@@ -610,39 +624,39 @@ const BuyerPage = () => {
                 }}
               />
             )}
-            
+
             <PropertyDetails>
               <PropertyTitle>
                 {property.title || 'Untitled Property'}
               </PropertyTitle>
-              
+
               <PropertyInfo>
                 <FaMapMarkerAlt />
                 <span><strong>Location:</strong> {property.location || 'Not available'}</span>
               </PropertyInfo>
-              
+
               <PropertyInfo>
                 <FaRupeeSign />
                 <span><strong>Price:</strong> {property.price ? `₹${property.price.toLocaleString()}` : 'Price not available'}</span>
               </PropertyInfo>
-              
+
               <PropertyInfo>
                 <FaInfoCircle />
                 <span><strong>Description:</strong> {property.description || 'No description provided'}</span>
               </PropertyInfo>
-              
+
               <PropertyInfo>
                 <FaEnvelope />
                 <span><strong>Contact:</strong> {property.userEmail || 'Email not provided'}</span>
               </PropertyInfo>
-              
+
               <PropertyInfo>
                 <FaCalendarAlt />
                 <span><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</span>
               </PropertyInfo>
-              
+
               {property.status === 'available' && activeTab !== 'purchased' && (
-                <BuyButton 
+                <BuyButton
                   onClick={() => handlePurchase(
                     property._id,
                     property.price,
@@ -669,6 +683,7 @@ const BuyerPage = () => {
 
   const clearFilters = () => {
     setFilters({
+      title: '',
       minPrice: '',
       maxPrice: '',
       location: '',
@@ -677,19 +692,17 @@ const BuyerPage = () => {
       minBathrooms: '',
       minArea: '',
       maxArea: '',
-      amenities: []
     });
 
     const filterForm = document.querySelector('form');
     if (filterForm) {
       filterForm.reset();
     }
-    applyFilters({});
+    // No need to call applyFilters here, useEffect will handle it
   };
 
   return (
     <PageWrapper>
-
       <BackgroundImage src={estateAgent} position="top" size="left" />
       <BackgroundImage src={house} position="bottom" size="right" />
       <BackgroundImage src={property} position="top" size="right" />
@@ -707,20 +720,20 @@ const BuyerPage = () => {
           <FaHome />
         </StyledHeading>
         <TabContainer>
-          <TabButton 
-            active={activeTab === 'available'} 
+          <TabButton
+            active={activeTab === 'available'}
             onClick={() => setActiveTab('available')}
           >
             Available Properties
           </TabButton>
-          <TabButton 
-            active={activeTab === 'favorites'} 
+          <TabButton
+            active={activeTab === 'favorites'}
             onClick={() => setActiveTab('favorites')}
           >
             My Favorites
           </TabButton>
-          <TabButton 
-            active={activeTab === 'purchased'} 
+          <TabButton
+            active={activeTab === 'purchased'}
             onClick={() => setActiveTab('purchased')}
           >
             Purchased Properties
