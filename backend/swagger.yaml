@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API documentation for EstateCraft Real Estate Management Platform
 servers:
-  - url: https://realestate-9evw.onrender.com/api
+  - url: https://realestate-9evw.onrender.com/
 components:
   securitySchemes:
     bearerAuth:
