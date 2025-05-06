@@ -1,0 +1,687 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Real Estate API",
+    "version": "1.0.0",
+    "description": "API documentation for the Real Estate application"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Authentication endpoints" },
+    { "name": "Admin", "description": "Admin operations" },
+    { "name": "Advertisement", "description": "Advertisement operations" },
+    { "name": "Buyer", "description": "Buyer operations" },
+    { "name": "Seller", "description": "Seller operations" },
+    { "name": "Employee", "description": "Employee operations" },
+    { "name": "Feedback", "description": "Feedback operations" }
+  ],
+  "paths": {
+    "/api/users/login": {
+      "post": {
+        "summary": "User login",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" },
+          "400": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/users/signup": {
+      "post": {
+        "summary": "User signup",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "role": { "type": "string", "enum": ["buyer", "seller", "employee", "admin"] }
+                },
+                "required": ["name", "email", "password", "role"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Signup successful" },
+          "400": { "description": "User already exists" }
+        }
+      }
+    },
+    "/api/users/logout": {
+      "get": {
+        "summary": "User logout",
+        "tags": ["Auth"],
+        "responses": {
+          "200": { "description": "Logout successful" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/admin/dashboard-stats": {
+      "get": {
+        "summary": "Get admin dashboard statistics",
+        "tags": ["Admin"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Dashboard statistics retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/admin/users/{id}": {
+      "delete": {
+        "summary": "Delete a user by ID",
+        "tags": ["Admin"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "200": { "description": "User deleted successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/api/admin/feedback/{id}": {
+      "delete": {
+        "summary": "Delete feedback by ID",
+        "tags": ["Admin"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Feedback ID"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Feedback deleted successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Feedback not found" }
+        }
+      }
+    },
+    "/api/admin/add-employee": {
+      "post": {
+        "summary": "Add a new employee",
+        "tags": ["Admin"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["name", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Employee added successfully" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/admin/properties/{id}": {
+      "delete": {
+        "summary": "Delete a property by ID",
+        "tags": ["Admin"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Property ID"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Property deleted successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Property not found" }
+        }
+      }
+    },
+    "/api/adv/Advertisement": {
+      "get": {
+        "summary": "Get all advertisements",
+        "tags": ["Advertisement"],
+        "responses": {
+          "200": { "description": "List of advertisements retrieved successfully" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/api/buyer/properties": {
+      "get": {
+        "summary": "View available properties",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of properties retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/buyer/purchased": {
+      "get": {
+        "summary": "Get purchased properties",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of purchased properties retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/buyer/favorites": {
+      "get": {
+        "summary": "Get favorite properties",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of favorite properties retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "post": {
+        "summary": "Add a property to favorites",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "propertyId": { "type": "string" }
+                },
+                "required": ["propertyId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Property added to favorites" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/buyer/favorites/{propertyId}": {
+      "delete": {
+        "summary": "Remove a property from favorites",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "propertyId",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Property ID"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Property removed from favorites" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Property not found in favorites" }
+        }
+      }
+    },
+    "/api/buyer/purchase": {
+      "post": {
+        "summary": "Purchase a property",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "propertyId": { "type": "string" }
+                },
+                "required": ["propertyId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Property purchased successfully" },
+          "400": { "description": "Invalid input or insufficient balance" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/buyer/webhook": {
+      "post": {
+        "summary": "Stripe webhook for payment events",
+        "tags": ["Buyer"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Webhook processed" },
+          "400": { "description": "Invalid webhook event" }
+        }
+      }
+    },
+    "/api/buyer/purchased-properties": {
+      "get": {
+        "summary": "Get all purchased properties",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of purchased properties retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/buyer/purchases": {
+      "get": {
+        "summary": "Get purchase history",
+        "tags": ["Buyer"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Purchase history retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/seller/myProperty": {
+      "get": {
+        "summary": "Get all properties of the seller",
+        "tags": ["Seller"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of seller's properties retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/seller/property": {
+      "post": {
+        "summary": "Add a new property",
+        "tags": ["Seller"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "price": { "type": "number" },
+                  "image": { "type": "string", "format": "binary" }
+                },
+                "required": ["title", "description", "price", "image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Property added successfully" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/seller/delete-property": {
+      "post": {
+        "summary": "Delete a property",
+        "tags": ["Seller"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "propertyId": { "type": "string" }
+                },
+                "required": ["propertyId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Property deleted successfully" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Property not found" }
+        }
+      }
+    },
+    "/api/seller/advertise": {
+      "post": {
+        "summary": "Request advertisement for a property",
+        "tags": ["Seller"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "propertyId": { "type": "string" }
+                },
+                "required": ["propertyId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Advertisement request submitted successfully" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/seller/advertisement-status": {
+      "get": {
+        "summary": "Get advertisement status for seller's properties",
+        "tags": ["Seller"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Advertisement status retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/feedback": {
+      "post": {
+        "summary": "Submit feedback",
+        "tags": ["Feedback"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" },
+                  "rating": { "type": "integer" }
+                },
+                "required": ["message", "rating"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Feedback submitted successfully" },
+          "400": { "description": "Invalid input" }
+        }
+      }
+    },
+    "/api/employee/advertisements": {
+      "get": {
+        "summary": "Get all advertisements",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of advertisements retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/employee/advertisement": {
+      "post": {
+        "summary": "Add a new advertisement",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "imageUrl": { "type": "string" }
+                },
+                "required": ["title", "description", "imageUrl"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Advertisement added successfully" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/employee/revenue-stats": {
+      "get": {
+        "summary": "Get revenue statistics",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Revenue stats retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/api/employee/advertisement/{id}": {
+      "put": {
+        "summary": "Edit an advertisement",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Advertisement ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "imageUrl": { "type": "string" }
+                },
+                "required": ["title", "description", "imageUrl"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Advertisement updated successfully" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Advertisement not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete an advertisement",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Advertisement ID"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Advertisement deleted successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Advertisement not found" }
+        }
+      }
+    },
+    "/api/employee/advertisement-requests": {
+      "get": {
+        "summary": "Get all advertisement requests",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of advertisement requests retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/employee/advertisement-request/status": {
+      "patch": {
+        "summary": "Update advertisement request status",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requestId": { "type": "string" },
+                  "status": { "type": "string", "enum": ["approved", "rejected", "pending"] }
+                },
+                "required": ["requestId", "status"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Advertisement request status updated successfully" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Advertisement request not found" }
+        }
+      }
+    },
+    "/api/employee/advertisement-request/{id}": {
+      "delete": {
+        "summary": "Delete an advertisement request",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Advertisement request ID"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Advertisement request deleted successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Advertisement request not found" }
+        }
+      }
+    },
+    "/api/employee/approved-advertisements": {
+      "get": {
+        "summary": "Get all approved advertisements",
+        "tags": ["Employee"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of approved advertisements retrieved successfully" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
