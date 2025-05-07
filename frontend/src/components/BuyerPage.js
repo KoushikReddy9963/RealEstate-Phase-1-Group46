@@ -4,7 +4,7 @@ import authService from '../services/AuthService';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { colors } from '../styles/commonStyles';
-import { FaHeart, FaRegHeart, FaSignOutAlt, FaShoppingCart, FaMapMarkerAlt, FaRupeeSign, FaInfoCircle, FaEnvelope, FaCalendarAlt, FaHome, FaStar } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaSignOutAlt, FaShoppingCart, FaMapMarkerAlt, FaRupeeSign, FaInfoCircle, FaEnvelope, FaCalendarAlt, FaHome, FaStar, FaBed, FaBath, FaRulerCombined } from 'react-icons/fa';
 import estateAgent from '../assets/estate-agent.png';
 import house from '../assets/house.png';
 import property from '../assets/property.png';
@@ -457,6 +457,7 @@ const BuyerPage = () => {
       const response = await axios.get('https://realestate-9evw.onrender.com/api/buyer/favorites', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      // Make sure the backend populates all property fields
       setFavorites(response.data);
     } catch (error) {
       console.error('Error fetching favorites:', error);
@@ -469,6 +470,7 @@ const BuyerPage = () => {
       const response = await axios.get('https://realestate-9evw.onrender.com/api/buyer/purchased', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      // Make sure the backend populates all property fields
       setPurchasedProperties(response.data);
     } catch (error) {
       console.error('Error fetching purchased properties:', error);
@@ -651,19 +653,41 @@ const BuyerPage = () => {
                 <span><strong>Description:</strong> {property.description || 'No description provided'}</span>
               </PropertyInfo>
 
-              {/* Hide Contact and Listed on for purchased tab */}
-              {activeTab !== 'purchased' && (
-                <>
-                  <PropertyInfo>
-                    <FaEnvelope />
-                    <span><strong>Contact:</strong> {property.userEmail || 'Email not provided'}</span>
-                  </PropertyInfo>
-                  <PropertyInfo>
-                    <FaCalendarAlt />
-                    <span><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</span>
-                  </PropertyInfo>
-                </>
+              <PropertyInfo>
+                <FaBed />
+                <span><strong>Bedrooms:</strong> {property.bedrooms || 'Not specified'}</span>
+              </PropertyInfo>
+
+              <PropertyInfo>
+                <FaBath />
+                <span><strong>Bathrooms:</strong> {property.bathrooms || 'Not specified'}</span>
+              </PropertyInfo>
+
+              <PropertyInfo>
+                <FaRulerCombined />
+                <span><strong>Area:</strong> {property.area ? `${property.area} sq ft` : 'Not specified'}</span>
+              </PropertyInfo>
+
+              <PropertyInfo>
+                <FaHome />
+                <span><strong>Property Type:</strong> {property.propertyType ? property.propertyType.charAt(0).toUpperCase() + property.propertyType.slice(1) : 'Not specified'}</span>
+              </PropertyInfo>
+
+              {property.amenities && property.amenities.length > 0 && (
+                <PropertyInfo>
+                  <FaStar />
+                  <span><strong>Amenities:</strong> {property.amenities.join(', ')}</span>
+                </PropertyInfo>
               )}
+
+              <PropertyInfo>
+                <FaEnvelope />
+                <span><strong>Contact:</strong> {property.userEmail || 'Email not provided'}</span>
+              </PropertyInfo>
+              <PropertyInfo>
+                <FaCalendarAlt />
+                <span><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</span>
+              </PropertyInfo>
 
               {property.status === 'available' && activeTab !== 'purchased' && (
                 <BuyButton
