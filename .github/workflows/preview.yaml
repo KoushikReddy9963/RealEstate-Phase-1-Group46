@@ -11,6 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
       - name: Run Backend Tests
         working-directory: ./backend
         run: npm test
