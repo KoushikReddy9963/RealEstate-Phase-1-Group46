@@ -11,7 +11,7 @@ Estate Craft is a real estate management platform using the MERN stack. It suppo
 - Secure Platform
 - User Confidentiality
 - Feedback System
-- Advertisement Page for Sellers
+- Advertisement Page for Seller
 - Property Details & Images
 - Dashboards (Seller, Employee, Admin)
 - Admin Analytics
