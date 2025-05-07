@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 5000
 
 # Generate swagger-output.json and start the app
-CMD ["sh", "-c", "node swagger-autogen.js && node index.js"]
+CMD ["sh", "-c", "node index.js"]
