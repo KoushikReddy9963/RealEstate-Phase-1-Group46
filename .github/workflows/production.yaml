@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Run Tests
+      - name: Run Backend Tests
+        working-directory: ./backend
         run: npm test
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
