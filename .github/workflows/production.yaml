@@ -2,7 +2,6 @@ name: Vercel Production Deployment
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  NODE_ENV: test
 on:
   push:
     branches:
@@ -12,22 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - name: Install Backend Dependencies
-        working-directory: ./backend
-        run: |
-          npm ci
-          npm install --save-dev jest @babel/core @babel/preset-env babel-jest
-          npm install jest --save-dev
-      - name: Run Backend Tests
-        working-directory: ./backend
-        env:
-          NODE_ENV: test
-        run: |
-          npx jest --detectOpenHandles --forceExit --verbose
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information

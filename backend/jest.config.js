@@ -1,15 +1,8 @@
 export default {
-    testEnvironment: 'node',
+    testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|js?|tsx?|ts?)$",
     transform: {
-        "^.+\\.(js|jsx)$": "babel-jest"
+        "^.+\\.(js|jsx|mjs)$": "babel-jest"
     },
-    testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|js?)$",
     testPathIgnorePatterns: ["<rootDir>/build/", "<rootDir>/node_modules/"],
-    moduleFileExtensions: ["js", "jsx"],
-    transformIgnorePatterns: [
-        'node_modules/(?!(module-that-needs-to-be-transformed)/)'
-    ],
-    verbose: true,
-    detectOpenHandles: true,
-    forceExit: true
+    moduleFileExtensions: ["js", "jsx", "mjs"]
 };
