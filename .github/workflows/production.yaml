@@ -20,6 +20,7 @@ jobs:
         working-directory: ./backend
         run: |
           npm ci
+          npm install --save-dev jest @babel/core @babel/preset-env babel-jest
           npm install jest --save-dev
       - name: Run Backend Tests
         working-directory: ./backend
