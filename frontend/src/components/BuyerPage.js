@@ -1,18 +1,33 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import authService from '../services/AuthService';
-import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { colors } from '../styles/commonStyles';
-import { FaHeart, FaRegHeart, FaSignOutAlt, FaShoppingCart, FaMapMarkerAlt, FaRupeeSign, FaInfoCircle, FaEnvelope, FaCalendarAlt, FaHome, FaStar, FaBed, FaBath, FaRulerCombined } from 'react-icons/fa';
-import estateAgent from '../assets/estate-agent.png';
-import house from '../assets/house.png';
-import property from '../assets/property.png';
-import search from '../assets/search.png';
-import { useDispatch } from 'react-redux';
-import { logoutUser } from '../redux/slices/authSlice';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import authService from "../services/AuthService";
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import { colors } from "../styles/commonStyles";
+import {
+  FaHeart,
+  FaRegHeart,
+  FaSignOutAlt,
+  FaShoppingCart,
+  FaMapMarkerAlt,
+  FaRupeeSign,
+  FaInfoCircle,
+  FaEnvelope,
+  FaCalendarAlt,
+  FaHome,
+  FaStar,
+  FaBed,
+  FaBath,
+  FaRulerCombined,
+} from "react-icons/fa";
+import estateAgent from "../assets/estate-agent.png";
+import house from "../assets/house.png";
+import property from "../assets/property.png";
+import search from "../assets/search.png";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../redux/slices/authSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PageWrapper = styled.div`
   background-color: ${colors.background};
@@ -91,11 +106,11 @@ const TabButton = styled.button`
   font-weight: 600;
   font-size: 1.5rem;
   transition: all 0.3s ease;
-  background: ${props => props.active ? colors.primary : colors.neutral};
-  color: ${props => props.active ? 'white' : '#333'};
+  background: ${(props) => (props.active ? colors.primary : colors.neutral)};
+  color: ${(props) => (props.active ? "white" : "#333")};
 
   &:hover {
-    background: ${props => props.active ? colors.secondary : colors.accent};
+    background: ${(props) => (props.active ? colors.secondary : colors.accent)};
   }
 `;
 
@@ -163,17 +178,17 @@ const PropertyCard = styled.div`
   position: relative;
   background: white;
   border-radius: 15px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   padding: 25px;
   margin-bottom: 25px;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 
   &:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
     border-color: ${colors.accent}40;
   }
 
@@ -183,7 +198,7 @@ const PropertyCard = styled.div`
     object-fit: cover;
     border-radius: 12px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -195,17 +210,19 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 1.3rem;
   font-weight: 600;
-  background-color: ${props => 
-    props.status === 'available' ? `${colors.primary}` :
-    props.status === 'pending' ? `${colors.secondary}` :
-    `${colors.error}`};
+  background-color: ${(props) =>
+    props.status === "available"
+      ? `${colors.primary}`
+      : props.status === "pending"
+      ? `${colors.secondary}`
+      : `${colors.error}`};
   color: white;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 2;
 `;
 
 const FavoriteButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== 'isFavorite'
+  shouldForwardProp: (prop) => prop !== "isFavorite",
 })`
   position: absolute;
   top: 20px;
@@ -213,22 +230,22 @@ const FavoriteButton = styled.button.withConfig({
   padding: 8px;
   width: 45px;
   height: 45px;
-  background: ${props => props.isFavorite ? colors.secondary : 'white'};
-  border: 2px solid ${props => props.isFavorite ? colors.secondary : '#ccc'};
+  background: ${(props) => (props.isFavorite ? colors.secondary : "white")};
+  border: 2px solid ${(props) => (props.isFavorite ? colors.secondary : "#ccc")};
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.8rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
   z-index: 2;
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    background: ${props => props.isFavorite ? colors.secondary : '#f8f8f8'};
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    background: ${(props) => (props.isFavorite ? colors.secondary : "#f8f8f8")};
   }
 
   &:active {
@@ -236,7 +253,7 @@ const FavoriteButton = styled.button.withConfig({
   }
 
   svg {
-    color: ${props => props.isFavorite ? 'white' : colors.secondary};
+    color: ${(props) => (props.isFavorite ? "white" : colors.secondary)};
   }
 `;
 
@@ -256,13 +273,13 @@ const LogoutButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
 
   &:hover {
-    background: #9B2C2C;
+    background: #9b2c2c;
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   }
 
   &:active {
@@ -290,12 +307,12 @@ const BuyButton = styled.button`
   justify-content: center;
   gap: 10px;
   width: 100%;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
   &:hover {
     background: ${colors.primary};
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   }
 
   &:active {
@@ -311,7 +328,7 @@ const PropertyDetails = styled.div`
   padding: 20px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 `;
 
 const PropertyTitle = styled.h3`
@@ -364,10 +381,10 @@ const NoProperties = styled.div`
   padding: 40px;
   background: white;
   border-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   &::before {
-    content: '🏠';
+    content: "🏠";
     display: block;
     font-size: 3rem;
     margin-bottom: 15px;
@@ -382,23 +399,23 @@ const ButtonGroup = styled.div`
 `;
 
 const BuyerPage = () => {
-  const [activeTab, setActiveTab] = useState('available');
+  const [activeTab, setActiveTab] = useState("available");
   const [properties, setProperties] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [purchasedProperties, setPurchasedProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    title: '', 
-    minPrice: '',
-    maxPrice: '',
-    location: '',
-    propertyType: '',
-    minBedrooms: '',
-    minBathrooms: '',
-    minArea: '',
-    maxArea: '',
+    title: "",
+    minPrice: "",
+    maxPrice: "",
+    location: "",
+    propertyType: "",
+    minBedrooms: "",
+    minBathrooms: "",
+    minArea: "",
+    maxArea: "",
   });
-  const [isPaying, setIsPaying] = useState({}); 
+  const [isPaying, setIsPaying] = useState({});
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -416,10 +433,9 @@ const BuyerPage = () => {
         }
       });
 
-      setFilters(prev => ({ ...prev, ...newFilters }));
-      
+      setFilters((prev) => ({ ...prev, ...newFilters }));
     } catch (error) {
-      console.error('Error applying filters:', error);
+      console.error("Error applying filters:", error);
     } finally {
       setLoading(false);
     }
@@ -444,7 +460,7 @@ const BuyerPage = () => {
       );
       setProperties(response.data);
     } catch (error) {
-      console.error('Error fetching filtered properties:', error);
+      console.error("Error fetching filtered properties:", error);
     } finally {
       setLoading(false);
     }
@@ -454,40 +470,50 @@ const BuyerPage = () => {
   const fetchFavorites = useCallback(async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('https://realestate-9evw.onrender.com/api/buyer/favorites', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(
+        "https://realestate-9evw.onrender.com/api/buyer/favorites",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       // Make sure the backend populates all property fields
       setFavorites(response.data);
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      console.error("Error fetching favorites:", error);
     }
   }, []);
 
   const fetchPurchasedProperties = useCallback(async () => {
     try {
       const token = authService.getToken();
-      const response = await axios.get('https://realestate-9evw.onrender.com/api/buyer/purchased', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.get(
+        "https://realestate-9evw.onrender.com/api/buyer/purchased",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       // Make sure the backend populates all property fields
       setPurchasedProperties(response.data);
     } catch (error) {
-      console.error('Error fetching purchased properties:', error);
+      console.error("Error fetching purchased properties:", error);
     }
   }, []);
 
   const toggleFavorite = async (propertyId) => {
     try {
       const token = authService.getToken();
-      const isFavorite = favorites.some(fav => fav._id === propertyId);
+      const isFavorite = favorites.some((fav) => fav._id === propertyId);
 
       if (isFavorite) {
-        await axios.delete(`https://realestate-9evw.onrender.com/api/buyer/favorites/${propertyId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.delete(
+          `https://realestate-9evw.onrender.com/api/buyer/favorites/${propertyId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       } else {
-        await axios.post('https://realestate-9evw.onrender.com/api/buyer/favorites',
+        await axios.post(
+          "https://realestate-9evw.onrender.com/api/buyer/favorites",
           { propertyId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -495,61 +521,63 @@ const BuyerPage = () => {
       // Always refresh favorites after change
       fetchFavorites();
     } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast.error('Failed to update favorites');
+      console.error("Error toggling favorite:", error);
+      toast.error("Failed to update favorites");
     }
   };
 
   const handlePurchase = async (propertyId, price, title) => {
     // Prevent multiple clicks within 12 seconds for the same property
     if (isPaying[propertyId]) {
-      toast.info('Please wait before trying again.');
+      toast.info("Please wait before trying again.");
       return;
     }
-    setIsPaying(prev => ({ ...prev, [propertyId]: true }));
+    setIsPaying((prev) => ({ ...prev, [propertyId]: true }));
 
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate-9evw.onrender.com/api/buyer/purchase',
+        "https://realestate-9evw.onrender.com/api/buyer/purchase",
         {
           propertyId,
           price,
           title,
-          status: 'sold'
+          status: "sold",
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
       if (response.data && response.data.paymentUrl) {
-        setProperties(prevProperties =>
-          prevProperties.map(prop =>
-            prop._id === propertyId ? { ...prop, status: 'sold' } : prop
+        setProperties((prevProperties) =>
+          prevProperties.map((prop) =>
+            prop._id === propertyId ? { ...prop, status: "sold" } : prop
           )
         );
         window.location.href = response.data.paymentUrl;
       } else {
-        toast.error('Failed to initiate payment: Invalid response from server');
+        toast.error("Failed to initiate payment: Invalid response from server");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to initiate purchase');
+      toast.error(
+        error.response?.data?.message || "Failed to initiate purchase"
+      );
     } finally {
       // Allow pay button again after 12 seconds
       setTimeout(() => {
-        setIsPaying(prev => ({ ...prev, [propertyId]: false }));
+        setIsPaying((prev) => ({ ...prev, [propertyId]: false }));
       }, 12000);
     }
   };
 
   useEffect(() => {
-    if (activeTab === 'favorites') {
+    if (activeTab === "favorites") {
       fetchFavorites();
-    } else if (activeTab === 'purchased') {
+    } else if (activeTab === "purchased") {
       fetchPurchasedProperties();
     } else {
       const fetchInitialProperties = async () => {
@@ -557,7 +585,7 @@ const BuyerPage = () => {
         try {
           const token = authService.getToken();
           const response = await axios.get(
-            'https://realestate-9evw.onrender.com/api/buyer/properties',
+            "https://realestate-9evw.onrender.com/api/buyer/properties",
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -566,8 +594,8 @@ const BuyerPage = () => {
           );
           setProperties(response.data);
         } catch (error) {
-          console.error('Error fetching properties:', error);
-          toast.error('Failed to fetch properties');
+          console.error("Error fetching properties:", error);
+          toast.error("Failed to fetch properties");
         } finally {
           setLoading(false);
         }
@@ -578,44 +606,48 @@ const BuyerPage = () => {
 
   // Apply filters when filters state changes and tab is available
   useEffect(() => {
-    if (activeTab === 'available') {
+    if (activeTab === "available") {
       applyFilters();
     }
     // eslint-disable-next-line
   }, [filters, activeTab]);
 
   const renderProperties = () => {
-    const propertiesToShow = activeTab === 'favorites'
-      ? favorites
-      : activeTab === 'purchased'
+    const propertiesToShow =
+      activeTab === "favorites"
+        ? favorites
+        : activeTab === "purchased"
         ? purchasedProperties
         : properties;
 
     if (propertiesToShow.length === 0) {
-      return (
-        <NoProperties>
-          No properties found
-        </NoProperties>
-      );
+      return <NoProperties>No properties found</NoProperties>;
     }
 
     return (
       <PropertyGrid>
         {propertiesToShow.map((property) => (
           <PropertyCard key={property._id}>
-            <StatusBadge status={property.status || 'available'}>
-              {property.status ? property.status.charAt(0).toUpperCase() + property.status.slice(1) : 'Available'}
+            <StatusBadge status={property.status || "available"}>
+              {property.status
+                ? property.status.charAt(0).toUpperCase() +
+                  property.status.slice(1)
+                : "Available"}
             </StatusBadge>
 
-            {activeTab !== 'purchased' && (
+            {activeTab !== "purchased" && (
               <FavoriteButton
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleFavorite(property._id);
                 }}
-                isFavorite={favorites.some(fav => fav._id === property._id)}
+                isFavorite={favorites.some((fav) => fav._id === property._id)}
               >
-                {favorites.some(fav => fav._id === property._id) ? <FaHeart /> : <FaRegHeart />}
+                {favorites.some((fav) => fav._id === property._id) ? (
+                  <FaHeart />
+                ) : (
+                  <FaRegHeart />
+                )}
               </FavoriteButton>
             )}
 
@@ -624,81 +656,118 @@ const BuyerPage = () => {
                 src={`data:image/jpeg;base64,${property.image}`}
                 alt={property.title}
                 style={{
-                  width: '100%',
-                  height: '200px',
-                  objectFit: 'cover',
-                  borderRadius: '8px',
-                  marginBottom: '15px'
+                  width: "100%",
+                  height: "200px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
                 }}
               />
             )}
 
             <PropertyDetails>
               <PropertyTitle>
-                {property.title || 'Untitled Property'}
+                {property.title || "Untitled Property"}
               </PropertyTitle>
 
               <PropertyInfo>
                 <FaMapMarkerAlt />
-                <span><strong>Location:</strong> {property.location || 'Not available'}</span>
+                <span>
+                  <strong>Location:</strong>{" "}
+                  {property.location || "Not available"}
+                </span>
               </PropertyInfo>
 
               <PropertyInfo>
                 <FaRupeeSign />
-                <span><strong>Price:</strong> {property.price ? `₹${property.price.toLocaleString()}` : 'Price not available'}</span>
+                <span>
+                  <strong>Price:</strong>{" "}
+                  {property.price
+                    ? `₹${property.price.toLocaleString()}`
+                    : "Price not available"}
+                </span>
               </PropertyInfo>
 
               <PropertyInfo>
                 <FaInfoCircle />
-                <span><strong>Description:</strong> {property.description || 'No description provided'}</span>
+                <span>
+                  <strong>Description:</strong>{" "}
+                  {property.description || "No description provided"}
+                </span>
               </PropertyInfo>
 
-              <PropertyInfo>
-                <FaBed />
-                <span><strong>Bedrooms:</strong> {property.bedrooms || 'Not specified'}</span>
-              </PropertyInfo>
+              {property.bedrooms && (
+                <PropertyInfo>
+                  <FaBed />
+                  <span>
+                    <strong>Bedrooms:</strong> {property.bedrooms}
+                  </span>
+                </PropertyInfo>
+              )}
 
-              <PropertyInfo>
-                <FaBath />
-                <span><strong>Bathrooms:</strong> {property.bathrooms || 'Not specified'}</span>
-              </PropertyInfo>
+              {property.bathrooms && (
+                <PropertyInfo>
+                  <FaBath />
+                  <span>
+                    <strong>Bathrooms:</strong> {property.bathrooms}
+                  </span>
+                </PropertyInfo>
+              )}
 
               <PropertyInfo>
                 <FaRulerCombined />
-                <span><strong>Area:</strong> {property.area ? `${property.area} sq ft` : 'Not specified'}</span>
+                <span>
+                  <strong>Area:</strong>{" "}
+                  {property.area ? `${property.area} sq ft` : "Not specified"}
+                </span>
               </PropertyInfo>
 
               <PropertyInfo>
                 <FaHome />
-                <span><strong>Property Type:</strong> {property.propertyType ? property.propertyType.charAt(0).toUpperCase() + property.propertyType.slice(1) : 'Not specified'}</span>
+                <span>
+                  <strong>Property Type:</strong>{" "}
+                  {property.propertyType
+                    ? property.propertyType.charAt(0).toUpperCase() +
+                      property.propertyType.slice(1)
+                    : "Not specified"}
+                </span>
               </PropertyInfo>
 
               {property.amenities && property.amenities.length > 0 && (
                 <PropertyInfo>
                   <FaStar />
-                  <span><strong>Amenities:</strong> {property.amenities.join(', ')}</span>
+                  <span>
+                    <strong>Amenities:</strong> {property.amenities.join(", ")}
+                  </span>
                 </PropertyInfo>
               )}
 
               <PropertyInfo>
                 <FaEnvelope />
-                <span><strong>Contact:</strong> {property.userEmail || 'Email not provided'}</span>
+                <span>
+                  <strong>Contact:</strong>{" "}
+                  {property.userEmail || "Email not provided"}
+                </span>
               </PropertyInfo>
               <PropertyInfo>
                 <FaCalendarAlt />
-                <span><strong>Listed on:</strong> {property.createdAt ? new Date(property.createdAt).toLocaleDateString() : 'Not available'}</span>
+                <span>
+                  <strong>Listed on:</strong>{" "}
+                  {property.createdAt
+                    ? new Date(property.createdAt).toLocaleDateString()
+                    : "Not available"}
+                </span>
               </PropertyInfo>
 
-              {property.status === 'available' && activeTab !== 'purchased' && (
+              {property.status === "available" && activeTab !== "purchased" && (
                 <BuyButton
-                  onClick={() => handlePurchase(
-                    property._id,
-                    property.price,
-                    property.title
-                  )}
+                  onClick={() =>
+                    handlePurchase(property._id, property.price, property.title)
+                  }
                   disabled={!!isPaying[property._id]}
                 >
-                  <FaShoppingCart /> {isPaying[property._id] ? 'Processing...' : 'Buy Property'}
+                  <FaShoppingCart />{" "}
+                  {isPaying[property._id] ? "Processing..." : "Buy Property"}
                 </BuyButton>
               )}
             </PropertyDetails>
@@ -709,27 +778,34 @@ const BuyerPage = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     dispatch(logoutUser());
-    navigate('/');
+    navigate("/");
   };
 
-  const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata'];
+  const locations = [
+    "Mumbai",
+    "Delhi",
+    "Bangalore",
+    "Chennai",
+    "Hyderabad",
+    "Kolkata",
+  ];
 
   const clearFilters = () => {
     setFilters({
-      title: '',
-      minPrice: '',
-      maxPrice: '',
-      location: '',
-      propertyType: '',
-      minBedrooms: '',
-      minBathrooms: '',
-      minArea: '',
-      maxArea: '',
+      title: "",
+      minPrice: "",
+      maxPrice: "",
+      location: "",
+      propertyType: "",
+      minBedrooms: "",
+      minBathrooms: "",
+      minArea: "",
+      maxArea: "",
     });
 
-    const filterForm = document.querySelector('form');
+    const filterForm = document.querySelector("form");
     if (filterForm) {
       filterForm.reset();
     }
@@ -756,26 +832,26 @@ const BuyerPage = () => {
         </StyledHeading>
         <TabContainer>
           <TabButton
-            active={activeTab === 'available'}
-            onClick={() => setActiveTab('available')}
+            active={activeTab === "available"}
+            onClick={() => setActiveTab("available")}
           >
             Available Properties
           </TabButton>
           <TabButton
-            active={activeTab === 'favorites'}
-            onClick={() => setActiveTab('favorites')}
+            active={activeTab === "favorites"}
+            onClick={() => setActiveTab("favorites")}
           >
             My Favorites
           </TabButton>
           <TabButton
-            active={activeTab === 'purchased'}
-            onClick={() => setActiveTab('purchased')}
+            active={activeTab === "purchased"}
+            onClick={() => setActiveTab("purchased")}
           >
             Purchased Properties
           </TabButton>
         </TabContainer>
 
-        {activeTab === 'available' && (
+        {activeTab === "available" && (
           <FilterSection>
             <FilterTitle>Filter Properties</FilterTitle>
             <form onSubmit={handleFilterSubmit}>
@@ -784,7 +860,7 @@ const BuyerPage = () => {
                   type="text"
                   name="title"
                   placeholder="Search by title"
-                  defaultValue={filters.title || ''}
+                  defaultValue={filters.title || ""}
                 />
                 <Input
                   type="number"
@@ -798,19 +874,15 @@ const BuyerPage = () => {
                   placeholder="Max Price"
                   defaultValue={filters.maxPrice}
                 />
-                <Select
-                  name="location"
-                  defaultValue={filters.location}
-                >
+                <Select name="location" defaultValue={filters.location}>
                   <option value="">All Locations</option>
-                  {locations.map(location => (
-                    <option key={location} value={location}>{location}</option>
+                  {locations.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
                   ))}
                 </Select>
-                <Select
-                  name="propertyType"
-                  defaultValue={filters.propertyType}
-                >
+                <Select name="propertyType" defaultValue={filters.propertyType}>
                   <option value="">All Property Types</option>
                   <option value="house">House</option>
                   <option value="apartment">Apartment</option>
@@ -843,12 +915,16 @@ const BuyerPage = () => {
                 />
               </FilterGrid>
               <ButtonGroup>
-                <TabButton type="button" onClick={clearFilters}>Clear Filters</TabButton>
-                <TabButton type="submit" active>Apply Filters</TabButton>
+                <TabButton type="button" onClick={clearFilters}>
+                  Clear Filters
+                </TabButton>
+                <TabButton type="submit" active>
+                  Apply Filters
+                </TabButton>
               </ButtonGroup>
             </form>
             {loading && (
-              <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <div style={{ textAlign: "center", marginTop: "1rem" }}>
                 Loading properties...
               </div>
             )}
@@ -874,50 +950,50 @@ export default BuyerPage;
 const styles = {
   page: {
     backgroundColor: colors.background,
-    minHeight: '100vh',
-    padding: '2rem',
+    minHeight: "100vh",
+    padding: "2rem",
   },
   container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '2rem',
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "2rem",
   },
   propertyCard: {
     backgroundColor: colors.cardBg,
-    borderRadius: '12px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
-    transition: 'transform 0.3s ease',
-    padding: '1.5rem',
-    cursor: 'pointer',
+    borderRadius: "12px",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
+    transition: "transform 0.3s ease",
+    padding: "1.5rem",
+    cursor: "pointer",
   },
   heading: {
     color: colors.primary,
-    fontSize: '2.5rem',
-    textAlign: 'center',
-    marginBottom: '2rem',
+    fontSize: "2.5rem",
+    textAlign: "center",
+    marginBottom: "2rem",
   },
   filterSection: {
     backgroundColor: colors.cardBg,
-    borderRadius: '12px',
-    padding: '1.5rem',
-    marginBottom: '2rem',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+    borderRadius: "12px",
+    padding: "1.5rem",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
   },
   footer: {
-    backgroundColor: '#f5f5f5',
-    padding: '1rem',
-    textAlign: 'center',
-    color: '#333',
-    fontSize: '0.9rem',
-  }, 
+    backgroundColor: "#f5f5f5",
+    padding: "1rem",
+    textAlign: "center",
+    color: "#333",
+    fontSize: "0.9rem",
+  },
   footerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
+    maxWidth: "1200px",
+    margin: "0 auto",
   },
   noProperties: {
-    textAlign: 'center',
-    fontSize: '1.5rem',
+    textAlign: "center",
+    fontSize: "1.5rem",
     color: colors.primary,
-    marginTop: '2rem',
+    marginTop: "2rem",
   },
 };
