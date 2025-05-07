@@ -115,7 +115,7 @@ const Homepage = () => {
 
       <section className="home" id="home">
         <div className="content">
-          <h3>Welcome to EstateCraft buy sell Advertise Properties</h3>
+          <h3> Rama Krishna</h3>
         </div>
       </section>
 
