@@ -148,5 +148,5 @@ docker-compose down
 
 ## Credits
 
-- Made by Group 46 for Real Estate Project (OOPS Phase 1)
+- Made by Group 46 for Real Estate Project
 
