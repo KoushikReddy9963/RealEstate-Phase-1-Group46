@@ -127,7 +127,7 @@ export const getPurchasedProperties = async (req, res) => {
         const purchases = await Purchase.find({ buyer: req.user.id })
             .populate({
                 path: 'property',
-                select: 'title location price image description'
+                select: 'title location price image description userEmail createdAt status propertyType bedrooms bathrooms area amenities'
             });
 
         const purchasedProperties = purchases.map(purchase => ({
@@ -179,7 +179,7 @@ export const getFavorites = async (req, res) => {
         const favorites = await Favorite.find({ userId: req.user.id })
             .populate({
                 path: 'propertyId',
-                select: 'title location price image description userEmail createdAt status'
+                select: 'title location price image description userEmail createdAt status propertyType bedrooms bathrooms area amenities'
             })
             .sort({ createdAt: -1 });
 

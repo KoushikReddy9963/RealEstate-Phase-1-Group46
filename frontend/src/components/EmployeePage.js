@@ -56,8 +56,7 @@ const EmployeePage = () => {
             totalAdvertisements: 0,
             totalRevenue: 0,
             totalPropertyRevenue: 0,
-            totalAdvertisementRevenue: 0,
-            activeCampaigns: 0
+            totalAdvertisementRevenue: 0
         });
 
         // Dispatch logout action and navigate
@@ -112,8 +111,7 @@ const EmployeePage = () => {
                 totalAdvertisements: advertisements.length,
                 totalRevenue: response.data.data.totalRevenue,
                 totalPropertyRevenue: response.data.data.totalPropertyRevenue,
-                totalAdvertisementRevenue: response.data.data.totalAdvertisementRevenue,
-                activeCampaigns: advertisements.filter(ad => ad.status === 'active').length
+                totalAdvertisementRevenue: response.data.data.totalAdvertisementRevenue
             });
         } catch (error) {
             console.error('Failed to fetch stats:', error);
@@ -447,10 +445,6 @@ const EmployeePage = () => {
                             <StatCard>
                                 <StatTitle>Advertisement Revenue</StatTitle>
                                 <StatValue>₹{stats.totalAdvertisementRevenue.toFixed(2)}</StatValue>
-                            </StatCard>
-                            <StatCard>
-                                <StatTitle>Active Campaigns</StatTitle>
-                                <StatValue>{stats.activeCampaigns}</StatValue>
                             </StatCard>
                         </StatsGrid>
 
