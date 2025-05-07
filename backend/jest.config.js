@@ -1,12 +1,11 @@
 export default {
     testEnvironment: 'node',
     transform: {
-        "^.+\\.(js|jsx|mjs)$": "babel-jest"
+        "^.+\\.(js|jsx)$": "babel-jest"
     },
-    testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|js?|tsx?|ts?)$",
+    testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|js?)$",
     testPathIgnorePatterns: ["<rootDir>/build/", "<rootDir>/node_modules/"],
-    moduleFileExtensions: ["js", "jsx", "mjs"],
-    extensionsToTreatAsEsm: ['.mjs'], // Removed .js as it's inferred
+    moduleFileExtensions: ["js", "jsx"],
     transformIgnorePatterns: [
         'node_modules/(?!(module-that-needs-to-be-transformed)/)'
     ],
