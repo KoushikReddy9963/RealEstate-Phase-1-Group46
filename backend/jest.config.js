@@ -6,7 +6,7 @@ export default {
     testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|js?|tsx?|ts?)$",
     testPathIgnorePatterns: ["<rootDir>/build/", "<rootDir>/node_modules/"],
     moduleFileExtensions: ["js", "jsx", "mjs"],
-    extensionsToTreatAsEsm: ['.js', '.mjs'],
+    extensionsToTreatAsEsm: ['.mjs'], // Removed .js as it's inferred
     transformIgnorePatterns: [
         'node_modules/(?!(module-that-needs-to-be-transformed)/)'
     ],

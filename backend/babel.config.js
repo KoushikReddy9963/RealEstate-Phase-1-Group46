@@ -4,7 +4,7 @@ export default {
             targets: {
                 node: 'current'
             },
-            modules: false
+            modules: 'auto' // Changed from false to auto
         }]
     ],
     env: {
@@ -13,7 +13,8 @@ export default {
                 ['@babel/preset-env', {
                     targets: {
                         node: 'current'
-                    }
+                    },
+                    modules: 'auto'
                 }]
             ]
         }
