@@ -20,7 +20,8 @@ jobs:
         run: npm ci
       - name: Run Backend Tests
         working-directory: ./backend
-        run: npm test
+        run: |
+          npm test -- --detectOpenHandles --forceExit
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Pull Vercel Environment Information
