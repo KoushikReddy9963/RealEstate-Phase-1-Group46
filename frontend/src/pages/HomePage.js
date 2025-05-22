@@ -206,8 +206,8 @@ const Homepage = () => {
           <div className="box">
             <h3>contact info</h3>
             <a href="#!">+91 9963909924</a>
-            <a href="#!">@gmail.com</a>
-            <a href="#!">Sri City (AP), 517646</a>
+            <a href="#!">@iiits.in</a>
+            <a href="#!">Sri City Andhra pradesh, 517646</a>
           </div>
 
           <div className="box">
@@ -221,7 +221,7 @@ const Homepage = () => {
         </div>
 
         <div className="credit">
-          created by <span>EstateCraft reserved by IIIT SRI CITY</span> | All rights are reserved!
+          created by <span>EstateCraft reserved by Indian Institute of Information Technology SRI CITY</span> | All rights are reserved!
         </div>
       </section>
     </>
