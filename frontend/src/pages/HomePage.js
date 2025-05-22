@@ -227,5 +227,127 @@ const Homepage = () => {
     </>
   );
 };
+// import React, { useState } from 'react';
+// import "./HomePage.css";
+// import realimage from './real.jpg';
+// import houseimage from './high-view-toy-model-house-keys_23-2148301692.jpg';
+
+// const Homepage = () => {
+//   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+//   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const res = await fetch('https://realestate-9evw.onrender.com/api/feedback', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+//         body: JSON.stringify(formData)
+//       });
+//       const result = await res.json();
+//       if (!res.ok) throw new Error(result.message || 'Failed to submit');
+//       alert('Feedback submitted!');
+//       setFormData({ name: '', email: '', message: '' });
+//     } catch (err) {
+//       alert('Error: ' + err.message);
+//     }
+//   };
+
+//   const showSidebar = () => document.getElementById('sidebar').style.display = 'flex';
+//   const hideSidebar = () => document.getElementById('sidebar').style.display = 'none';
+
+//   return (
+//     <>
+//       <nav>
+//         <ul className="sidebar" id="sidebar">
+//           <li onClick={hideSidebar}><a href="#!"><svg height="24" width="24"><path d="M256-200l-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z" /></svg></a></li>
+//           {['Home', 'Buyers', 'Advertise', 'Sellers', 'Employee', 'Admin', 'Login'].map((item, i) => (
+//             <li key={i}><a href={`/${item.toLowerCase()}`}>{item}</a></li>
+//           ))}
+//         </ul>
+
+//         <ul className="desktop-menu">
+//           <li><a href="#!"><img src={realimage} alt="" width="60" height="40" />EstateCraft</a></li>
+//           {['Buyers', 'Advertise', 'Sellers', 'Employee', 'Admin'].map((item, i) => (
+//             <li className="hideOnMobile" key={i}><a href={`/${item.toLowerCase()}`}>{item}</a></li>
+//           ))}
+//           <li className="hideOnMobile"><a href="/login"><button className="si">Login</button></a></li>
+//           <li className="menu-button" onClick={showSidebar}><a href="#!"><svg height="24" width="24"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" /></svg></a></li>
+//         </ul>
+//       </nav>
+
+//       <section className="home" id="home"><div className="content"><h3>Rama Krishna</h3></div></section>
+
+//       <section className="about" id="about">
+//         <h1 className="heading">about us</h1>
+//         <div className="row">
+//           <div className="content">
+//             <h3>Our Mission: Place your trust.</h3>
+//             <ul>
+//               <li>Students at IIIT Sri City offering a real estate platform.</li>
+//               <li>Promote real estate and build community.</li>
+//               <li>Helping you find your perfect property.</li>
+//               <li>Your dream home awaits. <b>Let's make moves</b></li>
+//             </ul>
+//           </div>
+//           <div className="image"><img src={houseimage} alt="" /></div>
+//         </div>
+//       </section>
+
+//       <section className="feedback" id="feedback">
+//         <h1 className="heading">Feedback</h1>
+//         <div className="feedback-container">
+//           <form className="feedback-form" onSubmit={handleSubmit}>
+//             {['name', 'email'].map((field, i) => (
+//               <div className="form-group" key={i}>
+//                 <label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+//                 <input type={field === 'email' ? 'email' : 'text'} id={field} name={field} value={formData[field]} onChange={handleChange} required />
+//               </div>
+//             ))}
+//             <div className="form-group">
+//               <label htmlFor="message">Message</label>
+//               <textarea id="message" name="message" value={formData.message} onChange={handleChange} required></textarea>
+//             </div>
+//             <button type="submit" className="btn submit-btn">Submit Feedback</button>
+//           </form>
+//         </div>
+//       </section>
+
+//       <section className="footer">
+//         <div className="box-container">
+//           <div className="box">
+//             <h3>quick links</h3>
+//             <a href="#home">home</a>
+//             <a href="#about">about</a>
+//           </div>
+//           <div className="box">
+//             <h3>extra links</h3>
+//             <a href="#!">my account</a>
+//             <a href="#!">terms</a>
+//             <a href="#!">privacy</a>
+//           </div>
+//           <div className="box">
+//             <h3>contact info</h3>
+//             <a href="#!">+91 9963909924</a>
+//             <a href="#!">@iiits.in</a>
+//             <a href="#!">Sri City, AP</a>
+//           </div>
+//           <div className="box">
+//             <h3>follow us</h3>
+//             {['facebook', 'twitter', 'instagram', 'linkedin', 'github'].map((net, i) => (
+//               <a key={i} href="#!">{net}</a>
+//             ))}
+//           </div>
+//         </div>
+//         <div className="credit">
+//           created by <span>EstateCraft | IIIT Sri City</span> | All rights reserved!
+//         </div>
+//       </section>
+//     </>
+//   );
+// };
+
+// export default Homepage;
+
 
 export default Homepage;
