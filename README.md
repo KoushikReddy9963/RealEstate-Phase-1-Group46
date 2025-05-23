@@ -139,14 +139,7 @@ docker-compose down
 
 ## Notes
 
-- Use only one pay/buy click at a time (prevents multiple purchases).
 - Sellers can only advertise if previous request is rejected or not made.
-- Purchased properties do not show contact or listed date.
 - All main features are available from the dashboard.
 
----
-
-## Credits
-
-- Made by Group 46 for Real Estate Project
 
