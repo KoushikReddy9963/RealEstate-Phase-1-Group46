@@ -124,7 +124,7 @@ docker-compose down
 - `controllers/` - All backend logic (Buyer, Seller, Admin, Employee)
 - `models/` - Mongoose models (User, Property, Advertisement, etc)
 - `routes/` - API routes for all modules
-- `middlewares/` - Auth, upload, cache, etc.
+- `middlewares/` - Auth, upload, cache etc.
 - `utils/` - Redis, helpers
 - `swagger/` - API documentation
 
